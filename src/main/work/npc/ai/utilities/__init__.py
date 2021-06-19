@@ -1,30 +1,9 @@
-import logging
 from typing import Dict, Any, Optional
 
 from work.npc.ai.utilities.KeyValueStore import KeyValueStore
 
 
 class Utilities:
-
-    @staticmethod
-    def configureKeyValueStore(config: str) -> KeyValueStore:
-        """
-        Initializes a key-value store
-        :param config: URI-style configuration string
-        :return: A handle to the store
-        """
-        from work.npc.ai.utilities.FileStore import FileStore
-        from work.npc.ai.utilities.RedisStore import RedisStore
-
-        args = config.split(":")
-        storeType = args[0]
-
-        if storeType == "redis":
-            return RedisStore(args[1:])
-        elif storeType == "file":
-            return FileStore(args[1:])
-        else:
-            logging.error("unknown store type %s" % config)
 
     @staticmethod
     def withEnvironment(parameters: Dict[str, Any], errorIfNotFound=False) -> None:
