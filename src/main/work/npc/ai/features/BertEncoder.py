@@ -1,5 +1,6 @@
 import numpy as np
 import transformers as tf
+from typing import Tuple, Optional
 
 from work.npc.ai.utilities.Languages import Languages
 
@@ -11,6 +12,9 @@ from work.npc.ai.utilities.Languages import Languages
 #
 
 class BertEncoder:
+    """
+    Uses BERT to encode a passage of text into vectors.
+    """
 
     modelSpec = {
         # [ tokenizer class, model class, path to model in HuggingFace, languages applied ]
@@ -47,7 +51,14 @@ class BertEncoder:
         self.tokenizer = tokenizer.from_pretrained(modelName)
         self.model = model.from_pretrained(modelName)
 
-    def encodeSentences(self, text):
+    def encodeSentences(self, text: str) -> Tuple[Optional[str], Optional[np.ndarray]]:
+        """
+        Breaks the text into sentences, and encodes each one into a vector with BERT.
+        It also separates English sentences from Chinese, and apply appropriately to the BERT model that support
+        the language.  If a model only supports English, all Chinese sentences are ignored, and vise versa.
+        :param text: The text to be encoded
+        :return: A numpy array of sentence vectors
+        """
         ideoText, alphaText = Languages.separateIdeograph(text)
         hanSent = Languages.hanziSentences(ideoText)
         engSent = Languages.englishSentences(alphaText)
@@ -71,11 +82,23 @@ class BertEncoder:
 
         return sentences, lastHiddenStates[0][:, 0, :].detach().numpy()
 
-    def encode(self, text):
+    def encode(self, text: str) -> Optional[np.ndarray]:
+        """
+        Encode a text into a vector with BERT.
+        The text is broken into sentences, and the average of the vectors for the sentences are used.
+        :param text: The text to be encoded.
+        :return: A vector representing the text.  None for if the text is empty.
+        """
         sentences, vectors = self.encodeSentences(text)
         return np.mean(vectors, axis=0) if sentences else None
 
-    def encode1(self, text):
+    def encode1(self, text: str) -> np.ndarray:
+        """
+        Encode text without breaking it to sentences first.  If the text is too long for BERT (512 tokens), it is will
+        be truncated.  This is more efficient than encode() if one knows the text will not be long.
+        :param text: The text to be encoded.
+        :return: A vector representing the text.
+        """
         tokenized = self.tokenizer(
             [text],
             padding=True, max_length=512, truncation=True,
