@@ -32,7 +32,7 @@ class KeyValueStore(ABC):
         pass
 
     @abstractmethod
-    def get(self, key: str, valueFormat: str = "javaobj"):
+    def get(self, key: str):
         pass
 
     @abstractmethod

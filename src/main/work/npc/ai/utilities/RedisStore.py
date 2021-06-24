@@ -11,19 +11,22 @@ class RedisStore(KeyValueStore):
 
     def __init__(self, args):
         self.host = args[0] if len(args) > 0 else "localhost"
-        self.port = int(args[1]) if len(args) > 1 else 6379
-        self.password = args[2] if len(args) > 2 else ""
+        self.port = int(args[1]) if len(args) > 1 and args[1] else 6379
+        self.password = args[2] if len(args) > 2 and args[2] else ""
+        self.format = args[3] if len(args) > 3 and args[3] else "javaobj"
         self.redis = redis.Redis(self.host, self.port, self.password)
 
     def exists(self, key: str):
         return self.redis.exists(key)
 
-    def get(self, key: str, valueFormat: str = "javaobj"):
+    def get(self, key: str):
         data = self.redis[key]
-        if valueFormat == "javaobj":
+        if self.format == "javaobj":
             return javaobj.loads(data)
-        elif valueFormat == "json":
+        elif self.format == "json":
             return json.loads(data)
+        else:
+            raise NotImplementedError(f"Unsupported value format {self.format}")
 
     def getName(self):
         return f"Redis({self.host},{self.port})"
