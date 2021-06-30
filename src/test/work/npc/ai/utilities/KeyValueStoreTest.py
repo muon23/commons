@@ -11,7 +11,7 @@ class KeyValueStoreTest(unittest.TestCase):
         self.assertGreater(len(pairs), 50)
 
         for p in pairs:
-            print(p, pairs[p].id.id, pairs[p].name)
+            print(p, pairs[p].name.name, pairs[p].name)
 
     def test_readWriteRedis(self):
         kvs = KeyValueStore.of("redis:localhost:::json")
