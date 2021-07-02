@@ -1,4 +1,5 @@
 import os
+import pickle
 import shutil
 import unittest
 from datetime import datetime, timedelta
@@ -13,6 +14,7 @@ class IncrementalStoreTest(unittest.TestCase):
         # Clean up output dir if exist
         if os.path.isdir(IncrementalStoreTest.outputDir):
             shutil.rmtree(IncrementalStoreTest.outputDir)
+        os.mkdir(IncrementalStoreTest.outputDir)
 
     @staticmethod
     def lineCount(file):
@@ -22,7 +24,7 @@ class IncrementalStoreTest(unittest.TestCase):
     def test_write(self):
         data = {"a": "aaa", "b": 123, "c": 3.14159}
 
-        inc = IncrementalStore("abc", IncrementalStoreTest.outputDir)
+        inc = IncrementalStore("abc", IncrementalStoreTest.outputDir, "json")
 
         # Test write a new file
         todayFile = inc.getWorkingFileName()
@@ -60,7 +62,7 @@ class IncrementalStoreTest(unittest.TestCase):
         t2 = t1 + timedelta(seconds=86400)
         d2 = {"a": "xyz", "b": 123, "date": t2.isoformat()}
 
-        inc = IncrementalStore("xyz", IncrementalStoreTest.outputDir)
+        inc = IncrementalStore("xyz", IncrementalStoreTest.outputDir, "json")
         inc.write([d1, d1], dateField="date").flush()
         d1File = inc.getWorkingFileName()
         self.assertEqual(IncrementalStoreTest.lineCount(d1File), 2)
@@ -69,6 +71,24 @@ class IncrementalStoreTest(unittest.TestCase):
         d2File = inc.getWorkingFileName()
         self.assertEqual(IncrementalStoreTest.lineCount(d1File), 3)
         self.assertEqual(IncrementalStoreTest.lineCount(d2File), 3)
+
+    def test_writePickle(self):
+        d1 = {"a": 123, "b": "xyz"}
+        d2 = {'x': 456, "y": 3.14159}
+
+        inc = IncrementalStore("pqr", IncrementalStoreTest.outputDir)
+        inc.write([d1, d2, d1, d2]).flush()
+
+        outputFile = inc.getWorkingFileName()
+        with open(outputFile, "rb") as f:
+            a = pickle.load(f)
+            self.assertEqual(a, d1)
+            a = pickle.load(f)
+            self.assertEqual(a, d2)
+            a = pickle.load(f)
+            self.assertEqual(a, d1)
+            a = pickle.load(f)
+            self.assertEqual(a, d2)
 
 
 

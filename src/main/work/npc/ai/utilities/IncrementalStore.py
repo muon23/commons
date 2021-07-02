@@ -1,5 +1,6 @@
 import json
 import os
+import pickle
 from datetime import date
 from typing import List, Union, Generator, TypeVar
 
@@ -9,7 +10,10 @@ from work.npc.ai.utilities import Utilities
 class IncrementalStore:
     IncrementalStore = TypeVar("IncrementalStore")
 
-    def __init__(self, name: str, storage: str):
+    def __init__(self, name: str, storage: str, storageFormat="pickle"):
+        if storageFormat not in ["pickle", "json"]:
+            raise ValueError(f"Storage format {storageFormat} not supported")
+
         self.name = name
         self.storage = storage
         self.currentDate = date.today()
@@ -17,13 +21,16 @@ class IncrementalStore:
         self.fileName = None
         self.newDate = None
 
+        self.format = storageFormat
+        self.access = "ab" if self.format == "pickle" else "a"
+
     def __del__(self):
         if self.fd is not None:
             self.fd.close()
 
     def getWorkingFileName(self) -> str:
         effectiveDate = self.newDate if self.newDate is not None else self.currentDate
-        return os.path.join(self.storage, self.name, f"{effectiveDate}.json")
+        return os.path.join(self.storage, self.name, f"{effectiveDate}.{self.format}")
 
     def _getFileDescriptor(self, newDate):
         if newDate is None:
@@ -38,7 +45,7 @@ class IncrementalStore:
             self.currentDate = newDate
             self.fileName = self.getWorkingFileName()
             os.makedirs(os.path.dirname(self.fileName), exist_ok=True)
-            self.fd = open(self.fileName, "a")
+            self.fd = open(self.fileName, self.access)
 
         return self.fd
 
@@ -46,8 +53,12 @@ class IncrementalStore:
         recordTime = record.get(dateField, None) if dateField is not None else None
         recordDate = Utilities.getDate(recordTime, dateFormat)
         fd = self._getFileDescriptor(recordDate)
-        record = json.dumps(record)
-        fd.write(record + "\n")
+
+        if self.format == "pickle":
+            pickle.dump(record, fd)
+        else:
+            record = json.dumps(record)
+            fd.write(record + "\n")
 
     def write(
             self,
