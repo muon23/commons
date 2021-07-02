@@ -1,6 +1,7 @@
 import os
 import shutil
 import unittest
+from datetime import datetime, timedelta
 
 from work.npc.ai.utilities.IncrementalStore import IncrementalStore
 
@@ -43,7 +44,7 @@ class IncrementalStoreTest(unittest.TestCase):
 
         # Test creating new date
         newDate = "2020-01-01"
-        inc._setToday(newDate)
+        inc.newDate = newDate
         forcedDateFile = inc.getWorkingFileName()
         if os.path.exists(forcedDateFile):
             os.remove(forcedDateFile)
@@ -52,6 +53,23 @@ class IncrementalStoreTest(unittest.TestCase):
 
         self.assertEqual(IncrementalStoreTest.lineCount(forcedDateFile), 1)
         self.assertEqual(IncrementalStoreTest.lineCount(todayFile), 3)
+
+    def test_writeWithDateField(self):
+        t1 = datetime.now()
+        d1 = {"a": "abc", "b": 123, "date": t1.isoformat()}
+        t2 = t1 + timedelta(seconds=86400)
+        d2 = {"a": "xyz", "b": 123, "date": t2.isoformat()}
+
+        inc = IncrementalStore("xyz", IncrementalStoreTest.outputDir)
+        inc.write([d1, d1], dateField="date").flush()
+        d1File = inc.getWorkingFileName()
+        self.assertEqual(IncrementalStoreTest.lineCount(d1File), 2)
+
+        inc.write([d1, d2, d2, d2], dateField="date").flush()
+        d2File = inc.getWorkingFileName()
+        self.assertEqual(IncrementalStoreTest.lineCount(d1File), 3)
+        self.assertEqual(IncrementalStoreTest.lineCount(d2File), 3)
+
 
 
 if __name__ == '__main__':

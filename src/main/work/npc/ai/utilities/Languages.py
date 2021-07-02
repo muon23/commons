@@ -136,7 +136,7 @@ class Languages:
             if text[i] in Languages._stops:
                 # We see a . ! ? or other potential sentence stops.  Let's see if it is really a sentence
 
-                if text[i+1] in Languages._quoteEnd:
+                if i < len(text)-1 and text[i+1] in Languages._quoteEnd:
                     # An end quote after sentence stop.  Include all the end quotes afterward into the sentence.
                     k = i+2
                     while k < len(text) and text[k] in Languages._quoteEnd:
@@ -150,7 +150,7 @@ class Languages:
 
                     i = k-1
 
-                elif text[i+1] in Languages._blanks:
+                elif i < len(text)-1 and text[i+1] in Languages._blanks:
                     # A blank after stop, potentially a sentence unless it is a abbreviation of titles (Mr., Dr.) or a
                     # numbered item (1. 2. 3.).
 

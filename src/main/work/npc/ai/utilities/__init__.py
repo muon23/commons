@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Dict, Any, Optional
 
 
@@ -59,3 +60,36 @@ class Utilities:
                 fd.close()
 
         return md5.hexdigest()
+
+    @staticmethod
+    def getDate(time, dateFormats=None):
+
+        if isinstance(time, datetime):
+            dt = time
+
+        elif isinstance(time, str):
+            if dateFormats is None:
+                dateFormats = ["%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%dT%H:%M:%S"]
+            elif isinstance(dateFormats, str):
+                dateFormats = [dateFormats]
+
+            dt = None
+            for df in dateFormats:
+                try:
+                    dt = datetime.strptime(time, df)
+                    break
+                except ValueError:
+                    continue
+
+            if dt is None:
+                return None
+
+        elif isinstance(time, int) or isinstance(time, float):
+            if time > 1000000000000:  # in microseconds
+                time /= 1000
+            dt = datetime.fromtimestamp(time).date()
+
+        else:
+            return None
+
+        return datetime.strftime(dt, "%Y-%m-%d")
