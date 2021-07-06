@@ -4,7 +4,7 @@ import pickle
 from datetime import date
 from typing import List, Union, Generator, TypeVar
 
-from work.npc.ai.utilities import Utilities
+from work.npc.ai.utilities.TimeFormatter import TimeFormatter
 
 
 class IncrementalStore:
@@ -51,13 +51,13 @@ class IncrementalStore:
 
     def _write1(self, record: dict, dateField: str, dateFormat: str) -> None:
         recordTime = record.get(dateField, None) if dateField is not None else None
-        recordDate = Utilities.getDate(recordTime, dateFormat)
+        recordDate = TimeFormatter.getDate(recordTime, dateFormat)
         fd = self._getFileDescriptor(recordDate)
 
         if self.format == "pickle":
             pickle.dump(record, fd)
         else:
-            record = json.dumps(record)
+            record = json.dumps(record, ensure_ascii=False)
             fd.write(record + "\n")
 
     def write(
