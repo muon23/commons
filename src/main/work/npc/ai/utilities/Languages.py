@@ -18,8 +18,28 @@ class Languages:
     _number = re.compile("[0-9]")
     _alphabetical = re.compile(r"\w")
 
-    @staticmethod
-    def separateIdeograph(text):
+    @classmethod
+    def isPunctuation(cls, char: str) -> bool:
+        return char and cls._punctuation.match(char) is not None
+
+    @classmethod
+    def isIdeography(cls, char: str) -> bool:
+        return char and cls._ideography.match(char) is not None
+
+    @classmethod
+    def isAlphabetical(cls, char: str) -> bool:
+        return char and cls._alphabetical.match(char) is not None
+
+    @classmethod
+    def isNumber(cls, char: str) -> bool:
+        return char and cls._number.match(char) is not None
+
+    @classmethod
+    def isStartQuote(cls, char: str) -> bool:
+        return char and cls._startQuote.match(char) is not None
+
+    @classmethod
+    def separateIdeograph(cls, text):
         if text is None:
             return "", ""
 
@@ -31,14 +51,14 @@ class Languages:
 
         for i in range(len(text)):
             char = text[i]
-            if Languages._punctuation.match(char) or Languages._number.match(char):
-                if Languages._startQuote.match(char) or not last:
+            if cls.isPunctuation(char) or cls.isNumber(char):
+                if cls.isStartQuote(char) or not last:
                     pending += char
                 elif last == "i":
                     ideographic += char
                 else:
                     alphabetical += char
-            elif Languages._ideography.match(char):
+            elif cls.isIdeography(char):
                 ideographic += pending + char
                 pending = ""
                 last = "i"
