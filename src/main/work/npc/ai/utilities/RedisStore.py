@@ -1,7 +1,7 @@
-from typing import Union
+import json
+import pickle
 
 import javaobj.v2 as javaobj
-import json
 import redis
 
 from work.npc.ai.utilities.KeyValueStore import KeyValueStore
@@ -25,8 +25,10 @@ class RedisStore(KeyValueStore):
             return javaobj.loads(data)
         elif self.format == "json":
             return json.loads(data)
+        elif self.format == "pickle":
+            return pickle.loads(data)
         else:
-            raise NotImplementedError(f"Unsupported value format {self.format}")
+            raise NotImplementedError(f"Unsupported value format {self.format} for get()")
 
     def getName(self):
         return f"Redis({self.host},{self.port})"
@@ -38,6 +40,11 @@ class RedisStore(KeyValueStore):
         keys = self.getKeys(prefix)
         return {k: javaobj.loads(v) for k, v in zip(keys, self.redis.mget(keys))}
 
-    def put(self, key: str, value: Union[list, dict]):
-        self.redis[key] = json.dumps(value)
+    def put(self, key: str, value: any):
+        if self.format == "json":
+            self.redis[key] = json.dumps(value)
+        elif self.format == "pickle":
+            self.redis[key] = pickle.dumps(value)
+        else:
+            raise NotImplementedError(f"Unsupported value format {self.format} for put()")
 

@@ -1,4 +1,4 @@
-from typing import Union
+import pickle
 
 import javaobj.v2 as javaobj
 import json
@@ -28,12 +28,19 @@ class FileStore(KeyValueStore):
             with open(self.path, "rb") as fd:
                 self.map = javaobj.load(fd)
 
-        elif self.format == "json":
+        elif self.format == "json" :
             if "w" in self.access:
                 self.map = dict()
             else:
                 with open(self.path, self.access) as fd:
                     self.map = json.load(fd)
+
+        elif self.format == "pickle":
+            if "w" in self.access:
+                self.map = dict()
+            else:
+                with open(self.path, self.access + "b") as fd:
+                    self.map = pickle.load(fd)
 
         else:
             raise NotImplementedError(f"Format {self.format} not supported")
@@ -41,8 +48,17 @@ class FileStore(KeyValueStore):
     def __del__(self):
         if self.updated and ("w" in self.access or "a" in self.access):
             assert self.format != "javaobj"  # Java object file cannot be writable from Python
-            with open(self.path, "w") as fd:
-                json.dump(self.map, fd)
+
+            if self.format == "json":
+                with open(self.path, "w") as fd:
+                    json.dump(self.map, fd)
+
+            elif self.format == "pickle":
+                with open(self.path, "wb") as fd:
+                    pickle.dump(self.map, fd)
+
+            else:
+                raise NotImplementedError(f"Format {self.format} not support for writing")
 
     def exists(self, key):
         return key in self.map
@@ -50,8 +66,8 @@ class FileStore(KeyValueStore):
     def get(self, key):
         if self.format == "javaobj":
             return javaobj.loads(bytes([x % 256 for x in self.map[key]]))
-        elif self.format == "json":
-            return json.loads(self.map[key])
+        elif self.format == "json" or self.format == "pickle":
+            return self.map[key]
         else:
             assert False  # will never be here
 
@@ -66,7 +82,7 @@ class FileStore(KeyValueStore):
         keys = self.getKeys(prefix)
         return {key: self.get(key) for key in keys}
 
-    def put(self, key: str, value: Union[list, dict]):
+    def put(self, key: str, value: any):
         if "w" not in self.access:
             raise RuntimeError(f"FileStore {self.path} is not writable")
 

@@ -1,7 +1,6 @@
-from abc import ABC, abstractmethod
-from typing import List, Dict, Union, TypeVar
-
 import logging
+from abc import ABC, abstractmethod
+from typing import List, Dict, TypeVar
 
 
 class KeyValueStore(ABC):
@@ -48,7 +47,7 @@ class KeyValueStore(ABC):
         pass
 
     @abstractmethod
-    def put(self, key: str, value: Union[list, dict]):
+    def put(self, key: str, value: any):
         pass
 
 
