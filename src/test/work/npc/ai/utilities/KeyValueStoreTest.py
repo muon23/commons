@@ -47,7 +47,7 @@ class KeyValueStoreTest(unittest.TestCase):
         if not os.path.exists(self.outputDir):
             os.makedirs(self.outputDir)
 
-        kvs = KeyValueStore.of(f"file:{outputFile}:w:json")
+        kvs = KeyValueStore.of(f"file:{outputFile}:w")
         testing = {
             "a": 10,
             "b": "xyz"
@@ -55,7 +55,7 @@ class KeyValueStoreTest(unittest.TestCase):
         kvs.put("test_readWriteRedisPickle", testing)
         del kvs
 
-        kvs2 = KeyValueStore.of(f"file:{outputFile}:r:json")
+        kvs2 = KeyValueStore.of(f"file:{outputFile}:r")
         readBack = kvs2.get("test_readWriteRedisPickle")
         print(readBack)
         self.assertEqual(readBack, testing)
@@ -65,7 +65,7 @@ class KeyValueStoreTest(unittest.TestCase):
         if not os.path.exists(self.outputDir):
             os.makedirs(self.outputDir)
 
-        kvs = KeyValueStore.of(f"file:{outputFile}:w:pickle")
+        kvs = KeyValueStore.of(f"file:{outputFile}:w")
         testing = {
             "a": 10,
             "b": "xyz"
@@ -73,7 +73,7 @@ class KeyValueStoreTest(unittest.TestCase):
         kvs.put("test_readWriteRedisPickle", testing)
         del kvs
 
-        kvs2 = KeyValueStore.of(f"file:{outputFile}:r:pickle")
+        kvs2 = KeyValueStore.of(f"file:{outputFile}:r")
         readBack = kvs2.get("test_readWriteRedisPickle")
         print(readBack)
         self.assertEqual(readBack, testing)

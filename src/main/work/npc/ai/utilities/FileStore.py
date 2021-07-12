@@ -14,10 +14,17 @@ class FileStore(KeyValueStore):
 
         self.path = args[0]
         self.access = args[1] if len(args) > 1 and args[1] else "r"
-        self.format = args[2] if len(args) > 2 and args[2] else "javaobj"
-        self.output = args[3] if len(args) > 3 and args[3] else self.path
-        self.updated = False
 
+        if len(args) > 2 and args[2]:
+            self.format = args[2]
+        elif self.path.endswith(".json"):
+            self.format = "json"
+        elif self.path.endswith(".pickle"):
+            self.format = "pickle"
+        else:
+            self.format = "javaobj"
+
+        self.updated = False
         self.access = "".join({c for c in self.access if c in "rwa"})
 
         if self.format == "javaobj":
@@ -28,7 +35,7 @@ class FileStore(KeyValueStore):
             with open(self.path, "rb") as fd:
                 self.map = javaobj.load(fd)
 
-        elif self.format == "json" :
+        elif self.format == "json":
             if "w" in self.access:
                 self.map = dict()
             else:
