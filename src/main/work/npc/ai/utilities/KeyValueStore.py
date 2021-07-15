@@ -50,4 +50,12 @@ class KeyValueStore(ABC):
     def put(self, key: str, value: any):
         pass
 
+    @abstractmethod
+    def flush(self):
+        pass
+
+    @abstractmethod
+    def getNumEntries(self):
+        pass
+
 

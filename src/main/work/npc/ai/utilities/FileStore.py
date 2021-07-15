@@ -53,6 +53,9 @@ class FileStore(KeyValueStore):
             raise NotImplementedError(f"Format {self.format} not supported")
 
     def __del__(self):
+        self.flush()
+
+    def flush(self):
         if self.updated and ("w" in self.access or "a" in self.access):
             assert self.format != "javaobj"  # Java object file cannot be writable from Python
 
@@ -96,5 +99,8 @@ class FileStore(KeyValueStore):
         assert self.format != "javaobj"  # Java object file cannot be writable from Python
         self.map[key] = value
         self.updated = True
+
+    def getNumEntries(self):
+        return len(self.map)
 
 

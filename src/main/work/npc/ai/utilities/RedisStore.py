@@ -30,6 +30,12 @@ class RedisStore(KeyValueStore):
         else:
             raise NotImplementedError(f"Unsupported value format {self.format} for get()")
 
+    def flush(self):
+        pass
+
+    def getNumEntries(self):
+        return len(self.redis.scan_iter())
+
     def getName(self):
         return f"Redis({self.host},{self.port})"
 

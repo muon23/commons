@@ -1,4 +1,11 @@
+from optparse import OptionParser
 from typing import Dict, Any, Optional
+
+import logging
+
+import json
+
+import yaml
 
 
 class Utilities:
@@ -62,3 +69,42 @@ class Utilities:
 
         return md5.hexdigest()
 
+    @staticmethod
+    def getConfig(debugConfig=None, debugArgs=None) -> dict:
+        config = None
+
+        if debugConfig is not None:
+            # Get configuration from argument
+            config = debugConfig
+        else:
+            # Get configuration from the command line argument
+            optParser = OptionParser('usage: %prog [options]')
+            optParser.add_option(
+                '-c', '--conf', '--parameters',
+                dest='configFile', help='configuration file', default='vectorize.yml'
+            )
+
+            (options, args) = optParser.parse_args() if debugArgs is None else optParser.parse_args(debugArgs)
+
+            # Get configuration parameters
+            configFileName = options.configFile
+
+            try:
+                with open(configFileName) as configFile:
+                    config = yaml.full_load(configFile)
+                    Utilities.withEnvironment(config)
+            except FileNotFoundError:
+                print('Configuration file %s not found' % configFileName)
+                exit(1)
+
+        # Set up logger
+        logFormat = '[%(asctime)s] %(levelname)s - %(message)s'
+        logFileName = config.get('logFile', '')
+        if logFileName == '':
+            logging.basicConfig(level=logging.INFO, format=logFormat)
+        else:
+            logging.basicConfig(level=logging.INFO, filename=logFileName, format=logFormat)
+
+        logging.info(f"Configuration: {json.dumps(config, indent=2)}")
+
+        return config
