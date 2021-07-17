@@ -39,15 +39,21 @@ class FileStore(KeyValueStore):
             if "w" in self.access:
                 self.map = dict()
             else:
-                with open(self.path, self.access) as fd:
-                    self.map = json.load(fd)
+                try:
+                    with open(self.path, self.access) as fd:
+                        self.map = json.load(fd)
+                except IOError:
+                    self.map = dict()
 
         elif self.format == "pickle":
             if "w" in self.access:
                 self.map = dict()
             else:
-                with open(self.path, self.access + "b") as fd:
-                    self.map = pickle.load(fd)
+                try:
+                    with open(self.path, self.access + "b") as fd:
+                        self.map = pickle.load(fd)
+                except IOError:
+                    self.map = dict()
 
         else:
             raise NotImplementedError(f"Format {self.format} not supported")
