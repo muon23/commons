@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import pickle
 from datetime import date
@@ -10,7 +11,7 @@ from work.npc.ai.utilities.TimeFormatter import TimeFormatter
 class IncrementalStore:
     IncrementalStore = TypeVar("IncrementalStore")
 
-    def __init__(self, name: str, storage: str, storageFormat="pickle"):
+    def __init__(self, name: str, storage: str, storageFormat="pickle", clean: bool = False):
         if storageFormat not in ["pickle", "json"]:
             raise ValueError(f"Storage format {storageFormat} not supported")
 
@@ -22,7 +23,10 @@ class IncrementalStore:
         self.newDate = None
 
         self.format = storageFormat
-        self.access = "ab" if self.format == "pickle" else "a"
+
+        self.access = "w" if clean else "a"
+        if self.format == "pickle":
+            self.access += "b"
 
     def __del__(self):
         if self.fd is not None:
@@ -46,6 +50,8 @@ class IncrementalStore:
             self.fileName = self.getWorkingFileName()
             os.makedirs(os.path.dirname(self.fileName), exist_ok=True)
             self.fd = open(self.fileName, self.access)
+
+            logging.info(f"Open IncrementalStore {self.fileName} with access {self.access}")
 
         return self.fd
 

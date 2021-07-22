@@ -1,5 +1,5 @@
 from optparse import OptionParser
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List, Callable, Union, Tuple
 
 import logging
 
@@ -70,7 +70,11 @@ class Utilities:
         return md5.hexdigest()
 
     @staticmethod
-    def getConfig(debugConfig=None, debugArgs=None) -> dict:
+    def getConfig(
+            cliOptions: Dict[str, Tuple[Union[str, List[str]], Any, str]] = None,
+            debugConfig: dict = None,
+            debugArgs: List[str] = None
+    ) -> dict:
         config = None
 
         if debugConfig is not None:
@@ -84,6 +88,23 @@ class Utilities:
                 dest='configFile', help='configuration file', default='vectorize.yml'
             )
 
+            # Get additional CLI options
+            if cliOptions is not None:
+                for option in cliOptions:
+                    flags, default, description = cliOptions[option]
+                    if isinstance(flags, str):
+                        flags = [flags]
+                    if isinstance(default, bool):
+                        # if default is true, giving the flag should set the variable to false,
+                        # therefore "store_false" for the action.
+                        action = "store_false" if default else "store_true"
+                        optParser.add_option(*flags, dest=option, action=action)
+                    elif default is None:
+                        optParser.add_option(*flags, dest=option, help=description)
+                    else:
+                        optParser.add_option(*flags, dest=option, help=description, default=default)
+
+            # Parse options from arguments
             (options, args) = optParser.parse_args() if debugArgs is None else optParser.parse_args(debugArgs)
 
             # Get configuration parameters
@@ -96,6 +117,13 @@ class Utilities:
             except FileNotFoundError:
                 print('Configuration file %s not found' % configFileName)
                 exit(1)
+
+            # Additional CLI options overrides configuration file
+            if cliOptions is not None:
+                for option in cliOptions:
+                    cliArgValue = getattr(options, option)
+                    if cliArgValue is not None:
+                        config[option] = cliArgValue
 
         # Set up logger
         logFormat = '[%(asctime)s] %(levelname)s - %(message)s'

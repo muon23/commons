@@ -3,6 +3,7 @@ import unittest
 from datetime import datetime
 
 from work.npc.ai.utilities import Utilities
+from work.npc.ai.utilities.TimeFormatter import TimeFormatter
 
 
 class UtilitiesTest(unittest.TestCase):
@@ -34,18 +35,18 @@ class UtilitiesTest(unittest.TestCase):
         self.assertEqual(len(md5), 32)
 
     def test_getDate(self):
-        d = Utilities.getDate("12/25/20", "%m/%d/%y")
+        d = TimeFormatter.getDate("12/25/20", "%m/%d/%y")
         self.assertEqual(d, "2020-12-25")
-        d = Utilities.getDate(1625197438)
+        d = TimeFormatter.getDate(1625197438)
         self.assertEqual(d, "2021-07-01")
-        d = Utilities.getDate(1625197438123)
+        d = TimeFormatter.getDate(1625197438123)
         self.assertEqual(d, "2021-07-01")
-        d = Utilities.getDate("2021-07-01T20:55:02", ["%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%dT%H:%M:%S"])
+        d = TimeFormatter.getDate("2021-07-01T20:55:02", ["%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%dT%H:%M:%S"])
         self.assertEqual(d, "2021-07-01")
         dt = datetime(2021, 7, 1, 20, 50, 10).isoformat()
-        d = Utilities.getDate(dt)
+        d = TimeFormatter.getDate(dt)
         self.assertEqual(d, "2021-07-01")
-        d = Utilities.getDate("2020-05-14T00:39:18.349+00:00")
+        d = TimeFormatter.getDate("2020-05-14T00:39:18.349+00:00")
         self.assertEqual(d, "2020-05-14")
 
 if __name__ == '__main__':

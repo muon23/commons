@@ -1,16 +1,33 @@
 from datetime import datetime
+from typing import Optional
 
 
 class TimeFormatter:
 
+    POPULAR_TIME_FORMATS = [
+        "%Y-%m-%dT%H:%M:%S.%f%z",
+        "%Y-%m-%dT%H:%M:%S.%f",
+        "%Y-%m-%dT%H:%M:%S",
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%d",
+    ]
+
     @classmethod
-    def getDateTime(cls, time, timeFormats=None):
+    def getDateTime(cls, time, timeFormats=None) -> Optional[datetime]:
+        if time is None:
+            return None
+
         if isinstance(time, datetime):
             return time
 
         elif isinstance(time, str):
+            if time == "today":
+                return datetime.today()
+            elif time == "now":
+                return datetime.now()
+
             if timeFormats is None:
-                timeFormats = ["%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"]
+                timeFormats = cls.POPULAR_TIME_FORMATS
             elif isinstance(timeFormats, str):
                 timeFormats = [timeFormats]
 
