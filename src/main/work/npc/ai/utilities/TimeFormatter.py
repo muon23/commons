@@ -1,4 +1,5 @@
-from datetime import datetime
+import re
+from datetime import datetime, timedelta
 from typing import Optional
 
 
@@ -58,3 +59,33 @@ class TimeFormatter:
     def getTimestamp(cls, time, timeFormats=None):
         dt = cls.getDateTime(time, timeFormats)
         return dt.timestamp() if dt is not None else None
+
+    @classmethod
+    def getDuration(cls, spec) -> float:
+        if isinstance(spec, int) or isinstance(spec, float):
+            return float(spec)
+
+        if isinstance(spec, timedelta):
+            return spec.total_seconds()
+
+        if isinstance(spec, str):
+            numSeconds = {
+                "": 1,
+                "s": 1,
+                "m": 60,
+                "h": 3600,
+                "d": 86400,
+                "w": 7 * 86400,
+                "M": 30 * 86400,
+                "y": 365 * 86400,
+            }
+
+            m = re.match(r"(\d+(.\d+)?)([smhdwMy]?)", spec)
+            if m:
+                amount, fraction, unit = m.groups()
+                amount = float(amount)
+                return amount * numSeconds[unit]
+
+        raise ValueError(f"Cannot parse duration {spec}")
+
+

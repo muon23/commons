@@ -1,9 +1,7 @@
-from optparse import OptionParser
-from typing import Dict, Any, Optional, List, Callable, Union, Tuple
-
-import logging
-
 import json
+import logging
+from optparse import OptionParser
+from typing import Dict, Any, Optional, List, Union, Tuple
 
 import yaml
 
@@ -72,14 +70,14 @@ class Utilities:
     @staticmethod
     def getConfig(
             cliOptions: Dict[str, Tuple[Union[str, List[str]], Any, str]] = None,
-            debugConfig: dict = None,
-            debugArgs: List[str] = None
+            providedConfig: dict = None,
+            providedArgs: List[str] = None
     ) -> dict:
         config = None
 
-        if debugConfig is not None:
+        if providedConfig is not None:
             # Get configuration from argument
-            config = debugConfig
+            config = providedConfig
         else:
             # Get configuration from the command line argument
             optParser = OptionParser('usage: %prog [options]')
@@ -105,7 +103,7 @@ class Utilities:
                         optParser.add_option(*flags, dest=option, help=description, default=default)
 
             # Parse options from arguments
-            (options, args) = optParser.parse_args() if debugArgs is None else optParser.parse_args(debugArgs)
+            (options, args) = optParser.parse_args() if providedArgs is None else optParser.parse_args(providedArgs)
 
             # Get configuration parameters
             configFileName = options.configFile
@@ -124,6 +122,8 @@ class Utilities:
                     cliArgValue = getattr(options, option)
                     if cliArgValue is not None:
                         config[option] = cliArgValue
+
+            config["configFile"] = configFileName
 
         # Set up logger
         logFormat = '[%(asctime)s] %(levelname)s - %(message)s'
