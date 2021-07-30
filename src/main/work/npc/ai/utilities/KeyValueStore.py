@@ -24,7 +24,7 @@ class KeyValueStore(ABC):
         elif storeType == "file":
             return FileStore(args[1:])
         else:
-            logging.error("unknown store type %s" % config)
+            logging.error("Unknown store type %s" % config)
 
     @abstractmethod
     def exists(self, key: str) -> bool:

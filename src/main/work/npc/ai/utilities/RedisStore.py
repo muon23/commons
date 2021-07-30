@@ -44,7 +44,15 @@ class RedisStore(KeyValueStore):
 
     def getAll(self, prefix=""):
         keys = self.getKeys(prefix)
-        return {k: javaobj.loads(v) for k, v in zip(keys, self.redis.mget(keys))}
+        kv = zip(keys, self.redis.mget(keys))
+        if self.format == "javaobj":
+            return {k: javaobj.loads(v) for k, v in kv}
+        elif self.format == "pickle":
+            return {k: pickle.loads(v) for k, v in kv}
+        elif self.format == "json":
+            return {k: json.loads(v) for k, v in kv}
+        else:
+            raise NotImplementedError(f"Unsupported value format {self.format} for getAll()")
 
     def put(self, key: str, value: any):
         if self.format == "json":
