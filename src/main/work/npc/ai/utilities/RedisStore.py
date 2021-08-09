@@ -1,4 +1,5 @@
 import json
+import logging
 import pickle
 
 import javaobj.v2 as javaobj
@@ -14,6 +15,8 @@ class RedisStore(KeyValueStore):
         self.port = int(args[1]) if len(args) > 1 and args[1] else 6379
         self.password = args[2] if len(args) > 2 and args[2] else ""
         self.format = args[3] if len(args) > 3 and args[3] else "javaobj"
+
+        logging.info(f"Accessing Redis {self.host}:{self.port}, data format in {self.format}")
         self.redis = redis.Redis(self.host, self.port, self.password)
 
     def exists(self, key: str):
