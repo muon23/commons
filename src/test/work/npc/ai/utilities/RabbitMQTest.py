@@ -75,7 +75,7 @@ class RabbitMQTest(unittest.TestCase):
             else:
                 print(f"unrecognized data type")
 
-        receiver = StreamReceiver.of("amqp://localhost?queue=hello&format=javaobj", callback)
+        receiver = StreamReceiver.of("nnnnnnn", callback)
 
         receiver.receiving()
 
