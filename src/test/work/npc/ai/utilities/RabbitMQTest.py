@@ -1,9 +1,9 @@
 import unittest
-from datetime import datetime
 
 import javaobj.v2 as javaobj
 import pika
 
+from work.npc.ai.utilities import Utilities
 from work.npc.ai.utilities.StreamReceiver import StreamReceiver
 from work.npc.ai.utilities.StreamSender import StreamSender
 
@@ -63,19 +63,10 @@ class RabbitMQTest(unittest.TestCase):
     def test_receivingJava(self):
         def callback(data):
             print("got it")
-            print(" [x] Received %s", data)
+            print(f" [x] Received {data}")
+            Utilities.printObject(data)
 
-            if data.classdesc.name == 'work.npc.ai.streaming.RabbitMQTest$X':
-                print(f"a={data.a} b={data.b}")
-            elif data.classdesc.name == 'work.npc.ai.search.Searchable':
-                print(f"id={str(data.id)} app={data.app.constant} action={data.action.constant}")
-                print(f"users={','.join([str(u) for u in data.userIds])}")
-                print(f"createdTime={datetime.fromtimestamp(data.createdTime.value)}")
-                print(f"content={str(data.content)}")
-            else:
-                print(f"unrecognized data type")
-
-        receiver = StreamReceiver.of("nnnnnnn", callback)
+        receiver = StreamReceiver.of("amqp://localhost?queue=hello&format=javaobj", callback)
 
         receiver.receiving()
 
