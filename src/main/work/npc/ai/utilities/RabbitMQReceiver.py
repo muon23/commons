@@ -15,17 +15,17 @@ class RabbitMQReceiver(StreamReceiver):
     def __init__(self, spec: str, callback: Callable[[Any], None]):
         self.url = urlsplit(spec)
 
-        connection = pika.BlockingConnection(pika.ConnectionParameters(
-            host=self.url.hostname if self.url.hostname else "localhost",
-            port=self.url.port if self.url.port else 5672
-        ))
+        mqUrl = f"{self.url.scheme}://{self.url.netloc}{self.url.path}"
+        connectParams = pika.URLParameters(mqUrl)
+
+        connection = pika.BlockingConnection(connectParams)
+
         self.channel = connection.channel()
 
         query = parse_qs(self.url.query)
         if "queue" not in query:
             raise ValueError(f"Queue name not found in {spec} (did you miss query component `?queue=...`?)")
         self.queue = query["queue"][0]
-        self.channel.queue_declare(queue=self.queue)
 
         self.format = query.get("format", ["pickle"])[0]
         if self.format not in self.SUPPORTED_FORMAT:
