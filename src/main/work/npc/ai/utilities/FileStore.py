@@ -1,3 +1,4 @@
+import os
 import pickle
 
 import javaobj.v2 as javaobj
@@ -64,6 +65,10 @@ class FileStore(KeyValueStore):
     def flush(self):
         if self.updated and ("w" in self.access or "a" in self.access):
             assert self.format != "javaobj"  # Java object file cannot be writable from Python
+
+            directory = os.path.dirname(self.path)
+            if not os.path.exists(directory):
+                os.makedirs(directory)
 
             if self.format == "json":
                 with open(self.path, "w") as fd:

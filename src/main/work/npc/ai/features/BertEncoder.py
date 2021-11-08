@@ -2,6 +2,7 @@ import numpy as np
 import transformers as tf
 from typing import Tuple, Optional
 
+from work.npc.ai.features.TextEncoder import TextEncoder
 from work.npc.ai.utilities.Languages import Languages
 
 
@@ -11,7 +12,7 @@ from work.npc.ai.utilities.Languages import Languages
 #   overwrite earlier loaded models with the last one.
 #
 
-class BertEncoder:
+class BertEncoder(TextEncoder):
     """
     Uses BERT to encode a passage of text into vectors.
     """
