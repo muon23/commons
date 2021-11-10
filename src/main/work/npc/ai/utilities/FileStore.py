@@ -53,7 +53,7 @@ class FileStore(KeyValueStore):
                 try:
                     with open(self.path, self.access + "b") as fd:
                         self.map = pickle.load(fd)
-                except IOError:
+                except IOError as e:
                     self.map = dict()
 
         else:

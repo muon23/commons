@@ -53,12 +53,20 @@ class TimeFormatter:
     @classmethod
     def getDate(cls, time, timeFormats=None):
         dt = cls.getDateTime(time, timeFormats)
-        return datetime.strftime(dt, "%Y-%m-%d") if dt is not None else None
+        return datetime.strftime(dt, "%Y-%m-%d") if dt else None
 
     @classmethod
     def getTimestamp(cls, time, timeFormats=None):
         dt = cls.getDateTime(time, timeFormats)
         return dt.timestamp() if dt is not None else None
+
+    @classmethod
+    def getDateAfterDays(cls, time, days, timeFormats=None):
+        dt = cls.getDateTime(time, timeFormats)
+        if not dt:
+            return None
+        dt += timedelta(days=days)
+        return datetime.strftime(dt, "%Y-%m-%d")
 
     @classmethod
     def getDuration(cls, spec) -> float:

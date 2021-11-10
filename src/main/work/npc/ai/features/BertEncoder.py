@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 import transformers as tf
 from typing import Tuple, Optional
@@ -51,6 +52,7 @@ class BertEncoder(TextEncoder):
 
         self.tokenizer = tokenizer.from_pretrained(modelName)
         self.model = model.from_pretrained(modelName)
+        logging.info(f"BERT model {modelName} loaded")
 
     def encodeSentences(self, text: str) -> Tuple[Optional[str], Optional[np.ndarray]]:
         """

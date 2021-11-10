@@ -13,5 +13,10 @@ class TimeFormatterTest(unittest.TestCase):
         self.assertEqual(TimeFormatter.getDuration("2w"), 14 * 86400)
         self.assertEqual(TimeFormatter.getDuration("2M"), 60 * 86400)
 
+    def test_dateAfterDays(self):
+        self.assertEqual(TimeFormatter.getDateAfterDays("2021-12-30", 3), "2022-01-02")
+        self.assertEqual(TimeFormatter.getDateAfterDays("2021-12-01", -3), "2021-11-28")
+
+
 if __name__ == '__main__':
     unittest.main()
