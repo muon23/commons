@@ -3,7 +3,7 @@ import numpy as np
 import transformers as tf
 from typing import Tuple, Optional
 
-from work.npc.ai.features.TextEncoder import TextEncoder
+from work.npc.ai.embeddings.TextEncoder import TextEncoder
 from work.npc.ai.utilities.Languages import Languages
 
 

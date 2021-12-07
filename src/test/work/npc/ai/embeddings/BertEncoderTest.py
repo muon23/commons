@@ -1,6 +1,6 @@
 import unittest
 
-from work.npc.ai.features.BertEncoder import BertEncoder
+from work.npc.ai.embeddings.BertEncoder import BertEncoder
 from work.npc.ai.utilities.Languages import Languages
 
 

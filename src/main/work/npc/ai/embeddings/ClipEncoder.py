@@ -4,7 +4,7 @@ from typing import Optional
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-from work.npc.ai.features.TextEncoder import TextEncoder
+from work.npc.ai.embeddings.TextEncoder import TextEncoder
 
 
 class ClipEncoder(TextEncoder):
