@@ -9,6 +9,7 @@ from tensorflow.keras import layers
 
 from work.npc.ai.features.CategoricalFeature import CategoricalFeature
 from work.npc.ai.features.ScalarFeature import ScalarFeature
+from work.npc.ai.features.VectorFeature import VectorFeature
 from work.npc.ai.nn.FnnClassifier import FnnClassifier
 from work.npc.ai.nn.FnnLayer import FnnLayer
 
@@ -148,6 +149,40 @@ class FnnClassifierTest(unittest.TestCase):
         predicted2 = classifier2.classify(data)
 
         self.assertTrue(predicted.equals(predicted2))
+
+    def test_threadDetectionData(self):
+        searchRoot = os.path.expanduser("~/IdeaProjects/search")
+        generatedThreadsDir = os.path.join(searchRoot, "data", "generated", "threads")
+        datasetDir = os.path.join(generatedThreadsDir, f"mixed_single_thread_3")
+        dataset = pd.read_parquet(datasetDir)
+
+        def useful(l):
+            return l is not None and not np.isnan(l).any()
+
+        usefulDataset = dataset[
+            dataset["spacialDistance"].apply(useful) & dataset["temporalDistance"].apply(useful)
+            ]
+
+        usefulDataset = usefulDataset.drop(["index"], axis=1)
+        usefulDataset = usefulDataset.reset_index()
+
+        trainingSet = usefulDataset.sample(frac=0.5)
+        testingSet = usefulDataset.drop(trainingSet.index)
+
+        classifier = FnnClassifier.of(
+            features = [
+                VectorFeature("embedding", normalize = "length"),
+                VectorFeature("spacialDistance", normalize = "column"),
+                VectorFeature("spacialDistance", normalize = "column"),
+            ],
+            labels = VectorFeature("sameThread"),
+            hiddenLayers = [2000, 500, 100, 50],
+            outputActivation = "sigmoid",
+        )
+
+        classifier.train(trainingSet)
+        classifier.show()
+        classifier.evaluate(testingSet)
 
 
 if __name__ == '__main__':

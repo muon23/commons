@@ -41,7 +41,7 @@ class VectorFeature(Feature):
 
         results = []
         for df in args:
-            values = df[self.column].to_numpy()
+            values = np.array(df[self.column].to_list())
 
             if self.padding is not None:
                 values = np.array([row + [self.padding] * (width - len(row)) for row in values])
@@ -70,4 +70,4 @@ class VectorFeature(Feature):
             valueRange = maxValue - minValue
             results = (results - minValue) / valueRange
 
-        return results, [f"{self.column}_{i}" for i in range(len(vectorSizes))]
+        return results, [f"{self.column}_{i}" for i in range(width)]

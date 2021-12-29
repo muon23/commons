@@ -7,7 +7,6 @@ from pandas import DataFrame
 from tensorflow import keras
 from tensorflow.keras import layers, callbacks
 
-from work.npc.ai.features.CategoricalFeature import CategoricalFeature
 from work.npc.ai.features.Feature import Feature
 from work.npc.ai.nn.ClassifierFactory import ClassifierFactory
 from work.npc.ai.nn.ClassifierModel import ClassifierModel
@@ -19,7 +18,7 @@ class FnnClassifierModel(ClassifierModel):
     def __init__(
             self,
             features: List[Feature],
-            labels: List[CategoricalFeature],
+            labels: List[Feature],
             hiddenLayers: List[int],
             **kwargs
     ):
@@ -145,7 +144,7 @@ class FnnClassifier(ClassifierFactory):
     def of(
             cls,
             features: Union[Feature, List[Feature]],
-            labels: Union[CategoricalFeature, List[CategoricalFeature]],
+            labels: Union[Feature, List[Feature]],
             **kwargs
     ) -> ClassifierModel:
         hiddenLayers = kwargs.get("hiddenLayers", None)
@@ -155,7 +154,7 @@ class FnnClassifier(ClassifierFactory):
         if isinstance(features, Feature):
             features = [features]
 
-        if isinstance(labels, CategoricalFeature):
+        if isinstance(labels, Feature):
             labels = [labels]
 
         return FnnClassifierModel(features, labels, **kwargs)
