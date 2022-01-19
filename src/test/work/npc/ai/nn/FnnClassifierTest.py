@@ -171,7 +171,7 @@ class FnnClassifierTest(unittest.TestCase):
 
         classifier = FnnClassifier.of(
             features = [
-                VectorFeature("embedding", normalize = "length"),
+                VectorFeature("embedding", normalize = "snippetLength"),
                 VectorFeature("spacialDistance", normalize = "column"),
                 VectorFeature("spacialDistance", normalize = "column"),
             ],

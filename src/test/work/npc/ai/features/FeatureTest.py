@@ -77,7 +77,7 @@ class FeatureTest(unittest.TestCase):
         ]])
         self.assertTrue(np.array_equal(fa, faExpected))
 
-        fa, fn = VectorFeature("a", normalize="length", padding=0).extract(df, df)
+        fa, fn = VectorFeature("a", normalize="snippetLength", padding=0).extract(df, df)
         print(fa)
         for v in fa[0]:
             self.assertAlmostEqual(np.linalg.norm(v), 1.0)

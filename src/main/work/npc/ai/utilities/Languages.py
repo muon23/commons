@@ -199,6 +199,11 @@ class Languages:
                         yield sentenceBegin, sentence
                         sentence = ""
 
+                elif text[i] in hanzi.stops:
+                    # Chinese language stops doesn't need a blank behind
+                    yield sentenceBegin, sentence
+                    sentence = ""
+
             i += 1
 
         if sentence != "":
