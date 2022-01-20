@@ -16,7 +16,7 @@ class VectorFeature(Feature):
             padding: Optional[float] = None,
     ):
 
-        if normalize and normalize not in ["full", "column", "snippetLength"]:
+        if normalize and normalize not in ["full", "column", "length"]:
             raise NotImplementedError(f"Unsupported normalization method {normalize}")
 
         self.column = column
@@ -53,7 +53,7 @@ class VectorFeature(Feature):
 
         results = np.concatenate(results, axis=0)
 
-        if self.normalize == "snippetLength":
+        if self.normalize == "length":
             norm = np.linalg.norm(results, axis=2)
             norm = np.expand_dims(norm, axis=2)
             results = results / norm
