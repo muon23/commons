@@ -31,9 +31,20 @@ class FnnClassifierModel(ClassifierModel):
         self.patience = kwargs.get("patience", 10)
         self.epochs = kwargs.get("epochs", 300)
         self.outputActivation = kwargs.get("outputActivation", None)
+        self.loss = kwargs.get("lossFunction", "binary_crossentropy")
+        self.metrics = kwargs.get("metrics", "precision,recall").split(",")
 
         self.model: keras.Model = None
         self.labelNames = None
+
+    __metrics = {
+        "precision": tf.metrics.Precision(),
+        "recall": tf.metrics.Recall(),
+        "roc": tf.metrics.AUC(curve="ROC"),
+        "pr": tf.metrics.AUC(curve="pr"),
+        "binary_accuracy": tf.metrics.BinaryAccuracy(),
+        "categorical_accuracy": tf.metrics.CategoricalAccuracy(),
+    }
 
     def build(self, inputUnits: int, outputUnits: int):
         tf.keras.backend.clear_session()
@@ -48,13 +59,8 @@ class FnnClassifierModel(ClassifierModel):
 
         self.model.compile(
             optimizer="adam",
-            loss=tf.keras.losses.BinaryCrossentropy(),
-            metrics=[
-                tf.metrics.BinaryAccuracy(),
-                tf.metrics.Precision(),
-                tf.metrics.Recall(),
-                tf.metrics.AUC(),
-            ]
+            loss=self.loss,
+            metrics=[self.__metrics[name] for name in self.metrics],
         )
 
     def train(self, data: DataFrame) -> None:

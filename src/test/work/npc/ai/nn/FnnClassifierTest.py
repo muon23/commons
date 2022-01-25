@@ -124,7 +124,10 @@ class FnnClassifierTest(unittest.TestCase):
         classifier = FnnClassifier.of(
             ScalarFeature(["a", "b", "c"]),
             CategoricalFeature("y"),
-            hiddenLayers=[32, 32, 32, 4]
+            hiddenLayers=[32, 32, 32, 4],
+            loss="categorical_crossentropy",
+            metrics="precision,recall,categorical_accuracy",
+            epoch=50,
         )
 
         classifier.train(train)
