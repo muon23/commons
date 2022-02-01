@@ -76,55 +76,55 @@ class Utilities:
     ) -> dict:
         config = None
 
+        # Get configuration from the command line argument
+        optParser = OptionParser('usage: %prog [options]')
+        optParser.add_option(
+            '-c', '--conf', '--parameters',
+            dest='configFile', help='configuration file', default='vectorize.yml'
+        )
+
+        # Get additional CLI options
+        if cliOptions is not None:
+            for option in cliOptions:
+                flags, default, description = cliOptions[option]
+                if isinstance(flags, str):
+                    flags = [flags]
+                if isinstance(default, bool):
+                    # if default is true, giving the flag should set the variable to false,
+                    # therefore "store_false" for the action.
+                    action = "store_false" if default else "store_true"
+                    optParser.add_option(*flags, dest=option, action=action)
+                elif default is None:
+                    optParser.add_option(*flags, dest=option, help=description)
+                else:
+                    optParser.add_option(*flags, dest=option, help=description, default=default)
+
+        # Parse options from arguments
+        (options, args) = optParser.parse_args() if providedArgs is None else optParser.parse_args(providedArgs)
+
+        # Get configuration parameters
+        configFileName = options.configFile
+
+        try:
+            with open(configFileName) as configFile:
+                config = yaml.full_load(configFile)
+                Utilities.withEnvironment(config)
+        except FileNotFoundError:
+            print('Configuration file %s not found' % configFileName)
+            exit(1)
+
+        # Additional CLI options overrides configuration file
+        if cliOptions is not None:
+            for option in cliOptions:
+                cliArgValue = getattr(options, option)
+                if cliArgValue is not None:
+                    config[option] = cliArgValue
+
+        config["configFile"] = configFileName
+
+        # Override configuration for testing/debugging
         if providedConfig is not None:
-            # Get configuration from argument
-            config = providedConfig
-        else:
-            # Get configuration from the command line argument
-            optParser = OptionParser('usage: %prog [options]')
-            optParser.add_option(
-                '-c', '--conf', '--parameters',
-                dest='configFile', help='configuration file', default='vectorize.yml'
-            )
-
-            # Get additional CLI options
-            if cliOptions is not None:
-                for option in cliOptions:
-                    flags, default, description = cliOptions[option]
-                    if isinstance(flags, str):
-                        flags = [flags]
-                    if isinstance(default, bool):
-                        # if default is true, giving the flag should set the variable to false,
-                        # therefore "store_false" for the action.
-                        action = "store_false" if default else "store_true"
-                        optParser.add_option(*flags, dest=option, action=action)
-                    elif default is None:
-                        optParser.add_option(*flags, dest=option, help=description)
-                    else:
-                        optParser.add_option(*flags, dest=option, help=description, default=default)
-
-            # Parse options from arguments
-            (options, args) = optParser.parse_args() if providedArgs is None else optParser.parse_args(providedArgs)
-
-            # Get configuration parameters
-            configFileName = options.configFile
-
-            try:
-                with open(configFileName) as configFile:
-                    config = yaml.full_load(configFile)
-                    Utilities.withEnvironment(config)
-            except FileNotFoundError:
-                print('Configuration file %s not found' % configFileName)
-                exit(1)
-
-            # Additional CLI options overrides configuration file
-            if cliOptions is not None:
-                for option in cliOptions:
-                    cliArgValue = getattr(options, option)
-                    if cliArgValue is not None:
-                        config[option] = cliArgValue
-
-            config["configFile"] = configFileName
+            config.update(providedConfig)
 
         # Set up logger
         logFormat = '[%(asctime)s] %(levelname)s - %(message)s'
