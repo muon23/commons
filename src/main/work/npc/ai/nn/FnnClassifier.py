@@ -32,7 +32,9 @@ class FnnClassifierModel(ClassifierModel):
         self.epochs = kwargs.get("epochs", 300)
         self.outputActivation = kwargs.get("outputActivation", None)
         self.loss = kwargs.get("lossFunction", "binary_crossentropy")
-        self.metrics = kwargs.get("metrics", "precision,recall").split(",")
+        self.metrics = kwargs.get("metrics", ["precision", "recall"])
+        if not isinstance(self.metrics, list):
+            self.metrics = [self.metrics]
 
         self.model: keras.Model = None
         self.labelNames = None
@@ -57,10 +59,12 @@ class FnnClassifierModel(ClassifierModel):
         outputs = layers.Dense(outputUnits, name="output_labels", activation=self.outputActivation)(fnn)
         self.model = keras.Model(inputs=inputs, outputs=outputs, name="fnn_model")
 
+        metrics = [self.__metrics[m] if m in self.__metrics else m for m in self.metrics]
+
         self.model.compile(
             optimizer="adam",
             loss=self.loss,
-            metrics=[self.__metrics[name] for name in self.metrics],
+            metrics=metrics,
         )
 
     def train(self, data: DataFrame) -> None:
@@ -166,10 +170,10 @@ class FnnClassifier(ClassifierFactory):
         return FnnClassifierModel(features, labels, **kwargs)
 
     @classmethod
-    def load(cls, fileName: str) -> ClassifierModel:
+    def load(cls, fileName: str, customObjects=None) -> ClassifierModel:
         with open(f"{fileName}/{cls.MODEL_FILE_NAME}", "rb") as fd:
             model = dill.load(fd)
-            model.model = tf.keras.models.load_model(fileName)
+            model.model = tf.keras.models.load_model(fileName, custom_objects=customObjects)
 
         return model
 
