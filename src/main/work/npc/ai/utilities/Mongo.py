@@ -20,5 +20,5 @@ class Mongo:
         self.db = self.client[database]
 
     def get(self, collection: str, query: dict):
-        logging.info(f"Querying MongoDB {self.uri} with {query}")
+        logging.info(f"Querying MongoDB {self.uri}, collection {collection} with query {query}")
         return self.db[collection].find(query)
