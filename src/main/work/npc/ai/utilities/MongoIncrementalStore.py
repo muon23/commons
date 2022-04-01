@@ -1,4 +1,5 @@
 import logging
+import pickle
 from typing import Union, List, Generator
 
 from work.npc.ai.utilities.IncrementalStore import IncrementalStore
@@ -26,18 +27,38 @@ class MongoIncrementalStore(IncrementalStore):
             self.mongo.clean(self.collection)
 
         if dateField:
+            self.forIndexing = {dateField}
             self.mongo.index(self.collection, [dateField])
+
         if uniqueFields:
+            self.forIndexing = self.forIndexing.union(set(uniqueFields))
             self.mongo.index(self.collection, uniqueFields, unique=True)
+
+    def __prepare(
+            self,
+            records: Union[dict, List[dict], Generator[dict, None, None]],
+    ) -> Generator[dict, None, None]:
+        if isinstance(records, dict):
+            records = [records]
+
+        for rec in records:
+            if self.storageFormat not in ["pickle"]:
+                yield rec
+            else:
+                idxFields = {col: rec[col] for col in self.forIndexing}
+                yield {
+                    "pickle": pickle.dumps(rec),
+                    **idxFields
+                }
 
     def write(
             self,
             records: Union[dict, List[dict], Generator[dict, None, None]],
     ) -> IncrementalStore:
         try:
-            self.mongo.put(self.collection, records)
+            self.mongo.put(self.collection, self.__prepare(records))
         except Exception as e:
-            logging.debug(str(e))
+            logging.debug(e)
             pass
         return self
 

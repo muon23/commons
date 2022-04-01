@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import TypeVar, List, Union
+from typing import TypeVar, List, Union, Generator
 
 from bson import ObjectId
 import pymongo
@@ -24,9 +24,9 @@ class Mongo:
         logging.info(f"Querying MongoDB {self.uri}, collection {collection} with query {query}")
         return self.db[collection].find(query, **kwargs)
 
-    def put(self, collection: str, data: Union[dict, List[dict]], **kwargs) -> List[ObjectId]:
+    def put(self, collection: str, data: Union[dict, List[dict], Generator[dict, None, None]], **kwargs) -> List[ObjectId]:
         cl = self.db[collection]
-        if isinstance(data, list):
+        if isinstance(data, list) or isinstance(data, Generator):
             return cl.insert_many(data, ordered=False, **kwargs)
         else:
             return [cl.insert_one(data, **kwargs).inserted_id]

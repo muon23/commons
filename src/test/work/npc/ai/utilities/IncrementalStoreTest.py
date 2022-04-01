@@ -116,6 +116,27 @@ class IncrementalStoreTest(unittest.TestCase):
         d3_2 = {"a": "abc", "b": 123, "date": TimeFormatter.getDate(t3), "time": t3.timestamp()}
         inc.write([d3, d2_2, d3_2])
 
+    def test_mongoPickle(self):
+        t1 = datetime.now()
+        d1 = {"a": "abc", "b": 123, "date": TimeFormatter.getDate(t1), "time": t1.timestamp()}
+        t2 = t1 + timedelta(seconds=86400)
+        d2 = {"a": "xyz", "b": 123, "date": TimeFormatter.getDate(t2), "time": t2.timestamp()}
+
+        inc = IncrementalStore.of(
+            self.mongoServer, collection="test_mongoPickle", clean=True,
+            dateField="date", uniqueFields=["a", "time"]
+        )
+
+        inc.write([d1, d1, d2])
+
+        d2_2 = d2
+        d2_2["b"] = 456
+        inc.write(d2_2)
+
+        t3 = t2 + timedelta(seconds=86400)
+        d3 = {"a": "xyz", "b": 123, "date": TimeFormatter.getDate(t3), "time": t3.timestamp()}
+        d3_2 = {"a": "abc", "b": 123, "date": TimeFormatter.getDate(t3), "time": t3.timestamp()}
+        inc.write([d3, d2_2, d3_2])
 
 if __name__ == '__main__':
     unittest.main()
