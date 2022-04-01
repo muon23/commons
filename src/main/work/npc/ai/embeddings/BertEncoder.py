@@ -18,6 +18,8 @@ class BertEncoder(TextEncoder):
     Uses BERT to encode a passage of text into vectors.
     """
 
+    # TODO: Set HF_HOME to specify model location
+
     modelSpec = {
         # [ tokenizer class, model class, path to model in HuggingFace, languages applied ]
         "bert-base-chinese":
@@ -40,6 +42,10 @@ class BertEncoder(TextEncoder):
             [tf.AutoTokenizer, tf.AutoModel, "sentence-transformers", ["zh", "en"]],
         "Multilingual-MiniLM-L12-H384":
             [tf.XLMRobertaTokenizer, tf.AutoModel, "microsoft", ["zh", "en"]],
+        "DialoGPT-large":
+            [tf.AutoTokenizer, tf.AutoModel, "microsoft", ["en"]],
+        "DialoGPT-small":
+            [tf.AutoTokenizer, tf.AutoModel, "microsoft", ["en"]],
     }
 
     def __init__(self, modelName):
@@ -51,6 +57,11 @@ class BertEncoder(TextEncoder):
             modelName = path + "/" + modelName
 
         self.tokenizer = tokenizer.from_pretrained(modelName)
+
+        self.padToken = modelName in ["DialoGPT-large", "DialoGPT-small"]
+        if self.padToken:
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+
         self.model = model.from_pretrained(modelName)
         logging.info(f"BERT model {modelName} loaded")
 
@@ -75,7 +86,7 @@ class BertEncoder(TextEncoder):
         tokenized = self.tokenizer(
             sentences,
             padding=True, max_length=512, truncation=True,
-            add_special_tokens=True,
+            add_special_tokens=self.padToken,
             return_tensors='pt'
         )
 

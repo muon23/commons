@@ -37,6 +37,26 @@ class MongoTest(unittest.TestCase):
             print("====")
             print(f"{doc['OCR']} -- {doc['ImageCaption']}")
 
+    def test_write(self):
+        server = f"mongodb://localhost"
+        mongo = Mongo(server, "local")
+
+        def data(i):
+            return {
+                "someStr": f"here I am {i}",
+                "someInt": i,
+            }
+
+        id1 = mongo.put("test", data(1))
+        id2 = mongo.put("test", [data(20), data(21)])
+        print(id1, id2)
+
+        removed = mongo.remove("test", {"someStr": {"$regex": "here I am 2.*"}})
+        print(str(removed))
+
+        cleaned = mongo.clean("test")
+        print(cleaned)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,87 +1,68 @@
-import json
 import logging
 import os
-import pickle
-from datetime import date
-from typing import List, Union, Generator, TypeVar
-
-from work.npc.ai.utilities.TimeFormatter import TimeFormatter
+from abc import ABC, abstractmethod
+from typing import Union, List, Generator, TypeVar
+from urllib.parse import urlparse
 
 
-class IncrementalStore:
+class IncrementalStore(ABC):
     IncrementalStore = TypeVar("IncrementalStore")
 
-    def __init__(self, name: str, storage: str, storageFormat="pickle", clean: bool = False):
-        if storageFormat not in ["pickle", "json"]:
-            raise ValueError(f"Storage format {storageFormat} not supported")
-
-        self.name = name
-        self.storage = storage
-        self.currentDate = date.today()
-        self.fd = None
-        self.fileName = None
-        self.newDate = None
-
-        self.format = storageFormat
-
-        self.access = "w" if clean else "a"
-        if self.format == "pickle":
-            self.access += "b"
-
-    def __del__(self):
-        if self.fd is not None:
-            self.fd.close()
-
-    def getWorkingFileName(self) -> str:
-        effectiveDate = self.newDate if self.newDate is not None else self.currentDate
-        return os.path.join(self.storage, self.name, f"{effectiveDate}.{self.format}")
-
-    def _getFileDescriptor(self, newDate):
-        if newDate is None:
-            newDate = self.newDate if self.newDate is not None else date.today()
-            self.newDate = None
-
-        if self.fd is None or self.currentDate != newDate:
-            # Open new file of the day
-            if self.fd is not None:
-                self.fd.close()
-
-            self.currentDate = newDate
-            self.fileName = self.getWorkingFileName()
-            os.makedirs(os.path.dirname(self.fileName), exist_ok=True)
-            self.fd = open(self.fileName, self.access)
-
-            logging.info(f"Open IncrementalStore {self.fileName} with access {self.access}")
-
-        return self.fd
-
-    def _write1(self, record: dict, dateField: str, dateFormat: str) -> None:
-        recordTime = record.get(dateField, None) if dateField is not None else None
-        recordDate = TimeFormatter.getDate(recordTime, dateFormat)
-        fd = self._getFileDescriptor(recordDate)
-
-        if self.format == "pickle":
-            pickle.dump(record, fd)
-        else:
-            record = json.dumps(record, ensure_ascii=False)
-            fd.write(record + "\n")
-
-    def write(
-            self,
-            records: Union[dict, List[dict], Generator[dict, None, None]],
+    @classmethod
+    def of(
+            cls,
+            uri: str,
+            collection: str,
+            storageFormat: str = "pickle",
+            clean: bool = False,
             dateField: str = None,
-            dateFormat: str = None
-    ) -> IncrementalStore:
-        if isinstance(records, dict):
-            # Single record
-            self._write1(records, dateField, dateFormat)
+            uniqueFields: List[str] = None,
+    ):
+        from work.npc.ai.utilities.FileIncrementalStore import FileIncrementalStore
+        from work.npc.ai.utilities.MongoIncrementalStore import MongoIncrementalStore
+
+        url = urlparse(uri)
+
+        if not url.scheme or url.scheme == "file":
+            return FileIncrementalStore(
+                os.path.join(url.path, collection),
+                storageFormat=storageFormat,
+                clean=clean,
+                dateField=dateField,
+            )
+
+        elif url.scheme == "mongodb":
+            return MongoIncrementalStore(
+                uri,
+                collection=collection,
+                storageFormat=storageFormat,
+                clean=clean,
+                dateField=dateField,
+                uniqueFields=uniqueFields,
+            )
+
         else:
-            for record in records:
-                self._write1(record, dateField, dateFormat)
+            logging.error("Unknown store type %s" % url.scheme)
 
-        return self
+    @abstractmethod
+    def write(
+        self,
+        records: Union[dict, List[dict], Generator[dict, None, None]]
+    ) -> IncrementalStore:
+        pass
 
+    @abstractmethod
     def flush(self) -> IncrementalStore:
-        if self.fd is not None:
-            self.fd.flush()
-        return self
+        pass
+
+    @abstractmethod
+    def getWorkingStorageName(self) -> str:
+        pass
+
+    @abstractmethod
+    def setLastState(self, state: dict):
+        pass
+
+    @abstractmethod
+    def getLastRecordTime(self):
+        pass
