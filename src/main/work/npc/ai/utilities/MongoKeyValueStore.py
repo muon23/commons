@@ -10,7 +10,8 @@ class MongoKeyValueStore(KeyValueStore):
             self,
             url: str,
             collection: str,
-            storageFormat="pickle"
+            storageFormat="pickle",
+            **kwargs
     ):
         self.url = url
         self.mongo = Mongo(url)
@@ -31,6 +32,9 @@ class MongoKeyValueStore(KeyValueStore):
         if "pickle" in record:
             record = pickle.loads(record["pickle"])
 
+        if "_value_" in record:
+            return record["_value_"]
+
         record["_id"] = key
         return record
 
@@ -48,15 +52,15 @@ class MongoKeyValueStore(KeyValueStore):
         query = {"_id": key}
 
         if not isinstance(value, dict):
-            value = {"value": value}
-        elif "_id" in value:
-            vv = value.copy()
-            del vv["_id"]
+            value = {"_value_": value}
 
         if self.format == "pickle":
             value = {"pickle": pickle.dumps(value)}
 
-        self.mongo.replace(self.collection, query, value)
+        vv = value.copy()
+        if "_id" in value:
+            del vv["_id"]
+        self.mongo.replace(self.collection, query, vv)
 
     def flush(self):
         pass

@@ -15,7 +15,8 @@ class RedisStore(KeyValueStore):
             self,
             uri: str,
             collection="",
-            storageFormat="pickle"
+            storageFormat="pickle",
+            **kwargs
     ):
         url = urlparse(uri)
 
