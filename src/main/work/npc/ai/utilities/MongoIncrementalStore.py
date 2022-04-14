@@ -27,10 +27,12 @@ class MongoIncrementalStore(IncrementalStore):
             self.mongo.clean(self.collection)
 
         if dateField:
+            self.dateField = dateField
             self.forIndexing = {dateField}
             self.mongo.index(self.collection, [dateField])
 
         if uniqueFields:
+            self.uniqueFields = uniqueFields
             self.forIndexing = self.forIndexing.union(set(uniqueFields))
             self.mongo.index(self.collection, uniqueFields, unique=True)
 
@@ -54,9 +56,16 @@ class MongoIncrementalStore(IncrementalStore):
     def write(
             self,
             records: Union[dict, List[dict], Generator[dict, None, None]],
+            **kwargs
     ) -> IncrementalStore:
+
         try:
-            self.mongo.put(self.collection, self.__prepare(records))
+            if self.uniqueFields and kwargs.get("replace"):
+                for rec in self.__prepare(records):
+                    query = {uf: rec[uf] for uf in self.uniqueFields }
+                    self.mongo.replace(self.collection, query, rec)
+            else:
+                self.mongo.put(self.collection, self.__prepare(records))
         except Exception as e:
             logging.debug(e)
             pass
@@ -77,3 +86,29 @@ class MongoIncrementalStore(IncrementalStore):
         query = {"collection": self.collection}
         state = self.mongo.get(self.STATE_COLLECTION, query)
         return state[0] if state else dict()
+
+    def read(self, startDate: str = None, endDate: str = None) -> Generator[dict, None, None]:
+
+        query = {}
+        if self.dateField:
+            dateRange = dict()
+            if startDate:
+                dateRange.update({"$gte": startDate})
+            if endDate:
+                dateRange.update({"$lte": endDate})
+
+            if dateRange:
+                query.update({self.dateField: dateRange})
+
+        for record in self.mongo.get(self.collection, query=query):
+            if "pickle" in record:
+                r = {"_id": record["_id"]}
+                r.update(pickle.loads(record["pickle"]))
+                yield r
+            else:
+                yield record
+
+    def readWithKey(self, key: str) -> dict:
+        query = {"_id": key}
+        results = self.mongo.get(self.collection, query=query)
+        return results[0] if results else dict()

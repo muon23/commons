@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import TypeVar, List, Union, Generator
+from typing import TypeVar, List, Union, Generator, Iterable
 
 from bson import ObjectId
 import pymongo
@@ -48,3 +48,10 @@ class Mongo:
 
     def clean(self, collection: str, **kwargs):
         return self.db[collection].delete_many({}, **kwargs).deleted_count
+
+    def listIds(self, collection: str) -> Iterable[str]:
+        ids = self.db[collection].distinct('_id')
+        return (str(i) for i in ids)
+
+    def size(self, collection: str) -> int:
+        return self.db[collection].count_documents({})

@@ -1,6 +1,5 @@
 import unittest
-
-import os
+from typing import List
 
 from work.npc.ai.utilities.KeyValueStore import KeyValueStore
 
@@ -8,85 +7,69 @@ from work.npc.ai.utilities.KeyValueStore import KeyValueStore
 class KeyValueStoreTest(unittest.TestCase):
 
     outputDir = "../../../../../../output/KeyValueStoreTest"
+    mongoServer = "mongodb://localhost/local"
+
+    data: List[dict] = [
+        {"_id": 1, "a": 123},
+        {"_id": 2, "a": 456},
+        {"_id": 3, "a": 789},
+        {"_id": 9, "a": 987},
+    ]
 
     def test_getAllFromRedis(self):
-        kvs = KeyValueStore.of("redis:localhost")
-        pairs = kvs.getAll("work.npc.ai.metrics.UserProfile")
+        kvs = KeyValueStore.of("redis://localhost", collection="work.npc.ai.metrics.UserProfile")
+        pairs = kvs.getAll()
         self.assertGreater(len(pairs), 50)
 
         for key in pairs:
             profile = kvs.get(key)
-            print(key, str(profile.name))
+            print(key, str(profile.period))
 
-    def test_readWriteRedis(self):
-        kvs = KeyValueStore.of("redis:localhost:::json")
-        testing = {
-            "a": 10,
-            "b": "xyz"
-        }
-        kvs.put("test_readWriteRedis", testing)
+    def __doTest(self, url, **kwargs):
+        kvs = KeyValueStore.of(url, **kwargs)
 
-        readBack = kvs.get("test_readWriteRedis")
+        for d in self.data:
+            kvs.put(d["_id"], d)
+
+        readBack = kvs.get(2)
         print(readBack)
-        self.assertEqual(readBack, testing)
+        self.assertEqual(readBack, self.data[1])
+
+        pairs = kvs.getAll()
+        self.assertEqual(len(pairs), len(self.data))
 
     def test_readWriteRedisPickle(self):
-        kvs = KeyValueStore.of("redis:localhost:::pickle")
-        testing = {
-            "a": 10,
-            "b": "xyz"
-        }
-        kvs.put("test_readWriteRedisPickle", testing)
+        self.__doTest("redis://localhost", collection="test_readWriteRedisPickle")
 
-        readBack = kvs.get("test_readWriteRedisPickle")
+    def test_readWriteRedisJson(self):
+        self.__doTest("redis://localhost", collection="test_readWriteRedisJson", storageFormat="json")
+
+    def __doFileTest(self, url, **kwargs):
+        kvsw = KeyValueStore.of(url, access="w", **kwargs)
+
+        for d in self.data:
+            kvsw.put(d["_id"], d)
+        kvsw.flush()
+
+        kvsr = KeyValueStore.of(url, access="r", **kwargs)
+        readBack = kvsr.get(2)
         print(readBack)
-        self.assertEqual(readBack, testing)
+        self.assertEqual(readBack, self.data[1])
+
+        pairs = kvsr.getAll()
+        self.assertEqual(len(pairs), len(self.data))
 
     def test_readWriteFileJson(self):
-        outputFile = self.outputDir + "/test_readWriteFileJson.json"
-        if not os.path.exists(self.outputDir):
-            os.makedirs(self.outputDir)
-
-        kvs = KeyValueStore.of(f"file:{outputFile}:w")
-        testing = {
-            "a": 10,
-            "b": "xyz"
-        }
-        kvs.put("test_readWriteRedisPickle", testing)
-        del kvs
-
-        kvs2 = KeyValueStore.of(f"file:{outputFile}:r")
-        readBack = kvs2.get("test_readWriteRedisPickle")
-        print(readBack)
-        self.assertEqual(readBack, testing)
+        self.__doFileTest(f"{self.outputDir}", collection="test_readWriteFileJson.json")
 
     def test_readWriteFilePickle(self):
-        outputFile = self.outputDir + "/test_readWriteFilePickle.pickle"
-        if not os.path.exists(self.outputDir):
-            os.makedirs(self.outputDir)
+        self.__doFileTest(f"file:{self.outputDir}", collection="test_readWriteFilePickle.pickle")
 
-        kvs = KeyValueStore.of(f"file:{outputFile}:w")
-        testing = {
-            "a": 10,
-            "b": "xyz"
-        }
-        kvs.put("test_readWriteRedisPickle", testing)
-        del kvs
+    def test_mongoJson(self):
+        self.__doTest(self.mongoServer, collection="test_mongoKVJson", storageFormat="json")
 
-        kvs2 = KeyValueStore.of(f"file:{outputFile}:r")
-        readBack = kvs2.get("test_readWriteRedisPickle")
-        print(readBack)
-        self.assertEqual(readBack, testing)
-
-    def test_readJavaObjFile(self):
-        kvs = KeyValueStore.of("file:../../../../../../output/testSaveAndLoad")
-
-        everything = kvs.getAll()
-
-        print(everything)
-        self.assertGreater(len(everything), 0)
-        self.assertEqual(everything["one"], 1)
-        self.assertEqual(everything["pi"].value, 3.14159)
+    def test_mongoPickle(self):
+        self.__doTest(self.mongoServer, collection="test_mongoKVPickle")
 
 
 if __name__ == '__main__':

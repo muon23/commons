@@ -1,23 +1,25 @@
+import json
 import os
 import pickle
 
 import javaobj.v2 as javaobj
-import json
 
 from work.npc.ai.utilities.KeyValueStore import KeyValueStore
 
 
-class FileStore(KeyValueStore):
+class FileKeyValueStore(KeyValueStore):
 
-    def __init__(self, args):
-        if not args:
+    def __init__(self, path, file, storageFormat=None, access="r"):
+        if not path:
             raise RuntimeError("Key-value store file name required")
 
-        self.path = args[0]
-        self.access = args[1] if len(args) > 1 and args[1] else "r"
+        self.path = os.path.join(path, file)
+        self.access = access
 
-        if len(args) > 2 and args[2]:
-            self.format = args[2]
+        if storageFormat:
+            self.format = storageFormat
+            if storageFormat in ["json", "pickle"] and not self.path.endswith(storageFormat):
+                self.path += f".{storageFormat}"
         elif self.path.endswith(".json"):
             self.format = "json"
         elif self.path.endswith(".pickle"):
@@ -87,7 +89,9 @@ class FileStore(KeyValueStore):
     def get(self, key):
         if self.format == "javaobj":
             return javaobj.loads(bytes([x % 256 for x in self.map[key]]))
-        elif self.format == "json" or self.format == "pickle":
+        elif self.format == "json":
+            return self.map[str(key)]
+        elif self.format == "pickle":
             return self.map[key]
         else:
             assert False  # will never be here
@@ -95,15 +99,13 @@ class FileStore(KeyValueStore):
     def getName(self):
         return f"File({self.path})"
 
-    def getKeys(self, prefix=""):
-        keys = [str(key) for key in self.map]
-        return [key for key in keys if key.startswith(prefix)]
+    def getKeys(self):
+        return list(self.map.keys())
 
-    def getAll(self, prefix=""):
-        keys = self.getKeys(prefix)
-        return {key: self.get(key) for key in keys}
+    def getAll(self):
+        return self.map
 
-    def put(self, key: str, value: any):
+    def put(self, key: any, value: any):
         if "w" not in self.access:
             raise RuntimeError(f"FileStore {self.path} is not writable")
 

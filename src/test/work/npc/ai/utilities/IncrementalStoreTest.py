@@ -2,7 +2,7 @@ import os
 import pickle
 import shutil
 import unittest
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from work.npc.ai.utilities.IncrementalStore import IncrementalStore
 from work.npc.ai.utilities.TimeFormatter import TimeFormatter
@@ -58,22 +58,65 @@ class IncrementalStoreTest(unittest.TestCase):
         self.assertEqual(IncrementalStoreTest.lineCount(forcedDateFile), 1)
         self.assertEqual(IncrementalStoreTest.lineCount(todayFile), 3)
 
-    def test_writeWithDateFieldFile(self):
-        t1 = datetime.now()
-        d1 = {"a": "abc", "b": 123, "date": TimeFormatter.getDate(t1)}
-        t2 = t1 + timedelta(seconds=86400)
-        d2 = {"a": "xyz", "b": 123, "date": TimeFormatter.getDate(t2)}
+    def __makeDatedData(self, startDate, numDays, recordsPerDay, names):
+        startTime = TimeFormatter.getDateTime(startDate)
+        timeInterval = 24 / recordsPerDay
+        recordSpace = timeInterval / len(names)
+
+        data = []
+        for day in range(numDays):
+            for i in range(recordsPerDay):
+                t = startTime + timedelta(hours=24 * day + timeInterval * i)
+                for n in names:
+                    data += [
+                        {"period": n, "b": 123, "date": TimeFormatter.getDate(t), "time": TimeFormatter.getTimestamp(t)},
+                    ]
+                    t = t + timedelta(hours=recordSpace)
+        return data
+
+    def test_readWriteDatedRecords(self):
+        recordsPerDay = 20
+        names = ["aaa", "bbb"]
+        recordsPerFile = recordsPerDay * len(names)
+
+        data = self.__makeDatedData("2022-01-01", 10, recordsPerDay, names)
 
         uri = f"file:{self.outputDir}"
-        inc = IncrementalStore.of(uri, collection="xyz", storageFormat="json", dateField="date")
-        inc.write([d1, d1]).flush()
-        d1File = inc.getWorkingStorageName()
-        self.assertEqual(IncrementalStoreTest.lineCount(d1File), 2)
+        inc = IncrementalStore.of(
+            uri, collection="test_readwriteDatedRecord",
+            storageFormat="json", dateField="date", uniqueFields=["period", "time"]
+        )
 
-        inc.write([d1, d2, d2, d2]).flush()
+        # Test writing.  d1File is the last file written, and should have 40 entries
+        inc.write(data).flush()
+        d1File = inc.getWorkingStorageName()
+        self.assertEqual(IncrementalStoreTest.lineCount(d1File), recordsPerFile)
+
+        # Write again and we should have double the data, since FileIncrementalStore does not check for uniquness
+        inc.write(data).flush()
         d2File = inc.getWorkingStorageName()
-        self.assertEqual(IncrementalStoreTest.lineCount(d1File), 3)
-        self.assertEqual(IncrementalStoreTest.lineCount(d2File), 3)
+        self.assertEqual(IncrementalStoreTest.lineCount(d2File), 2 * recordsPerFile)
+
+        # Open another incremental store that cleans existing data
+        inc = IncrementalStore.of(
+            uri, collection="test_readwriteDatedRecord",
+            storageFormat="json", dateField="date", clean=True
+        )
+
+        # Test writing again and should have 40 entries because the old ones are removed
+        inc.write(data).flush()
+        d1File = inc.getWorkingStorageName()
+        self.assertEqual(IncrementalStoreTest.lineCount(d1File), 40)
+
+        # Read the data back.  Reopen without storage format and it should figure this out by itself.
+        inc = IncrementalStore.of(
+            uri, collection="test_readwriteDatedRecord", dateField="date"
+        )
+
+        readData = list(inc.read("2022-01-02", "2022-01-03"))
+        self.assertEqual(len(readData), 2 * recordsPerFile)  # Having 2 days of data
+        for r in readData:
+            self.assertIn(r["date"], ["2022-01-02", "2022-01-03"])
 
     def test_writePickleFile(self):
         d1 = {"a": 123, "b": "xyz"}
@@ -95,48 +138,39 @@ class IncrementalStoreTest(unittest.TestCase):
             self.assertEqual(a, d2)
 
     def test_mongo(self):
-        t1 = datetime.now()
-        d1 = {"a": "abc", "b": 123, "date": TimeFormatter.getDate(t1), "time": t1.timestamp()}
-        t2 = t1 + timedelta(seconds=86400)
-        d2 = {"a": "xyz", "b": 123, "date": TimeFormatter.getDate(t2), "time": t2.timestamp()}
+        recordsPerDay = 5
+        names = ["aaa", "bbb"]
+        recordsPerFile = recordsPerDay * len(names)
+
+        data = self.__makeDatedData("2022-01-01", 5, recordsPerDay, names)
 
         inc = IncrementalStore.of(
-            self.mongoServer, collection="test_mongo", storageFormat="json", clean=True,
-            dateField="date", uniqueFields=["a", "time"]
+            self.mongoServer, collection="test_mongo",
+            storageFormat="json", dateField="date", uniqueFields=["period", "time"], clean=True
         )
 
-        inc.write([d1, d1, d2])
+        # Test writing.  d1File is the last file written, and should have 40 entries
+        inc.write(data).flush()
 
-        d2_2 = d2
-        d2_2["b"] = 456
-        inc.write(d2_2)
+        # Open another incremental store in pickle format.  Write some data that are not unique
+        data2 = self.__makeDatedData("2022-01-04", 5, recordsPerDay, names)
+        inc2 = IncrementalStore.of(
+            self.mongoServer, collection="test_mongo",
+            storageFormat="pickle", dateField="date", uniqueFields=["period", "time"],
+        )
+        inc2.write(data2, replace=True).flush()
 
-        t3 = t2 + timedelta(seconds=86400)
-        d3 = {"a": "xyz", "b": 123, "date": TimeFormatter.getDate(t3), "time": t3.timestamp()}
-        d3_2 = {"a": "abc", "b": 123, "date": TimeFormatter.getDate(t3), "time": t3.timestamp()}
-        inc.write([d3, d2_2, d3_2])
-
-    def test_mongoPickle(self):
-        t1 = datetime.now()
-        d1 = {"a": "abc", "b": 123, "date": TimeFormatter.getDate(t1), "time": t1.timestamp()}
-        t2 = t1 + timedelta(seconds=86400)
-        d2 = {"a": "xyz", "b": 123, "date": TimeFormatter.getDate(t2), "time": t2.timestamp()}
-
-        inc = IncrementalStore.of(
-            self.mongoServer, collection="test_mongoPickle", clean=True,
-            dateField="date", uniqueFields=["a", "time"]
+        # Read the data back.  Reopen without storage format and it should figure this out by itself.
+        inc3 = IncrementalStore.of(
+            self.mongoServer, collection="test_mongo", dateField="date"
         )
 
-        inc.write([d1, d1, d2])
+        readData = list(inc3.read("2022-01-03", "2022-01-04"))
+        self.assertEqual(len(readData), 2 * recordsPerFile)  # Having 2 days of data
+        for r in readData:
+            self.assertIn(r["date"], ["2022-01-03", "2022-01-04"])  # 2022-01-04 shall be decoded from pickle format
+            self.assertEqual(len(r), 5)  # 4 fields plus "_id"
 
-        d2_2 = d2
-        d2_2["b"] = 456
-        inc.write(d2_2)
-
-        t3 = t2 + timedelta(seconds=86400)
-        d3 = {"a": "xyz", "b": 123, "date": TimeFormatter.getDate(t3), "time": t3.timestamp()}
-        d3_2 = {"a": "abc", "b": 123, "date": TimeFormatter.getDate(t3), "time": t3.timestamp()}
-        inc.write([d3, d2_2, d3_2])
 
 if __name__ == '__main__':
     unittest.main()

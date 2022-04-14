@@ -1,37 +1,39 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import List, Dict, TypeVar
+from typing import Dict, TypeVar, Iterable
+from urllib.parse import urlparse
 
 
 class KeyValueStore(ABC):
     KeyValueStore = TypeVar("KeyValueStore")
 
     @staticmethod
-    def of(config: str) -> KeyValueStore:
-        """
-        Initializes a key-value store
-        :param config: URI-style configuration string
-        :return: A handle to the store
-        """
-        from work.npc.ai.utilities.FileStore import FileStore
+    def of(
+            uri: str,
+            collection: str,
+            **kwargs
+    ) -> KeyValueStore:
+        from work.npc.ai.utilities.FileKeyValueStore import FileKeyValueStore
         from work.npc.ai.utilities.RedisStore import RedisStore
+        from work.npc.ai.utilities.MongoKeyValueStore import MongoKeyValueStore
 
-        args = config.split(":")
-        storeType = args[0]
+        url = urlparse(uri)
 
-        if storeType == "redis":
-            return RedisStore(args[1:])
-        elif storeType == "file":
-            return FileStore(args[1:])
+        if not url.scheme or url.scheme == "file":
+            return FileKeyValueStore(path=url.path, file=collection, **kwargs)
+        elif url.scheme == "redis":
+            return RedisStore(uri, collection=collection, **kwargs)
+        elif url.scheme == "mongodb":
+            return MongoKeyValueStore(uri, collection=collection, **kwargs)
         else:
-            logging.error("Unknown store type %s" % config)
+            logging.error("Unknown store type %s" % url.scheme)
 
     @abstractmethod
-    def exists(self, key: str) -> bool:
+    def exists(self, key: any) -> bool:
         pass
 
     @abstractmethod
-    def get(self, key: str):
+    def get(self, key: any):
         pass
 
     @abstractmethod
@@ -39,15 +41,15 @@ class KeyValueStore(ABC):
         pass
 
     @abstractmethod
-    def getKeys(self, prefix="") -> List[str]:
+    def getKeys(self) -> Iterable[any]:
         pass
 
     @abstractmethod
-    def getAll(self, prefix="") -> Dict[str, any]:
+    def getAll(self) -> Dict[any, any]:
         pass
 
     @abstractmethod
-    def put(self, key: str, value: any):
+    def put(self, key: any, value: any):
         pass
 
     @abstractmethod

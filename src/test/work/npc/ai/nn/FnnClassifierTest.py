@@ -32,7 +32,7 @@ class FnnClassifierTest(unittest.TestCase):
             optimizer="adam",
             # loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
             loss=tf.keras.losses.BinaryCrossentropy(),
-            # metrics=[keras.metrics.SparseCategoricalAccuracy(name="acc")],
+            # metrics=[keras.metrics.SparseCategoricalAccuracy(period="acc")],
             metrics=[
                 tf.metrics.BinaryAccuracy(),
                 tf.metrics.Precision(),
@@ -170,7 +170,7 @@ class FnnClassifierTest(unittest.TestCase):
         usefulDataset = usefulDataset.reset_index()
 
         trainingSet = usefulDataset.sample(frac=0.5)
-        testingSet = usefulDataset.drop(trainingSet.index)
+        testingSet = usefulDataset.drop(trainingSet.__index)
 
         classifier = FnnClassifier.of(
             features = [

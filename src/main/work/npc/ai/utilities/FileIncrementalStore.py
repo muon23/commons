@@ -33,7 +33,7 @@ class FileIncrementalStore(IncrementalStore):
 
         self.format = storageFormat
 
-        if clean:
+        if clean and os.path.exists(self.path):
             rmtree(self.path)
 
         self.access = "w" if clean else "a"
@@ -80,7 +80,8 @@ class FileIncrementalStore(IncrementalStore):
 
     def write(
             self,
-            records: Union[dict, List[dict], Generator[dict, None, None]]
+            records: Union[dict, List[dict], Generator[dict, None, None]],
+            **kwargs
     ) -> IncrementalStore:
         if isinstance(records, dict):
             # Single record
@@ -111,3 +112,29 @@ class FileIncrementalStore(IncrementalStore):
             with open(stateFile, "r") as fd:
                 return yaml.load(fd)
 
+    def read(self, startDate: str, endDate: str) -> Generator[dict, None, None]:
+
+        for (dirPath, _, fileNames) in os.walk(self.path):
+            for fn in fileNames:
+
+                fileDate = fn.split(".")[0]
+                if fileDate < startDate or fileDate > endDate:
+                    continue
+
+                filePath = os.path.join(dirPath, fn)
+
+                if fn.endswith(".json"):
+                    with open(filePath, "r") as fd:
+                        for line in fd:
+                            yield json.loads(line)
+
+                elif fn.endswith(".pickle"):
+                    with open(filePath, "rb") as fd:
+                        while True:
+                            try:
+                                yield pickle.load(fd)
+                            except EOFError:
+                                break
+
+    def readWithKey(self, key: str) -> dict:
+        raise NotImplementedError("readWithKey() not supported by FileIncrementalStore")

@@ -24,6 +24,9 @@ class IncrementalStore(ABC):
         url = urlparse(uri)
 
         if not url.scheme or url.scheme == "file":
+            if uniqueFields:
+                logging.warning(f"uniqueFields {uniqueFields} not supported using FileIncrementalStore")
+
             return FileIncrementalStore(
                 os.path.join(url.path, collection),
                 storageFormat=storageFormat,
@@ -46,8 +49,9 @@ class IncrementalStore(ABC):
 
     @abstractmethod
     def write(
-        self,
-        records: Union[dict, List[dict], Generator[dict, None, None]]
+            self,
+            records: Union[dict, List[dict], Generator[dict, None, None]],
+            **kwargs
     ) -> IncrementalStore:
         pass
 
@@ -65,4 +69,12 @@ class IncrementalStore(ABC):
 
     @abstractmethod
     def getLastRecordTime(self):
+        pass
+
+    @abstractmethod
+    def read(self, startDate: str, endDate: str) -> Generator[dict, None, None]:
+        pass
+
+    @abstractmethod
+    def readWithKey(self, key: str) -> dict:
         pass
