@@ -5,6 +5,8 @@ from typing import Dict, Any, Optional, List, Union, Tuple
 
 import yaml
 
+from work.npc.ai.utilities.PropertyParser import PropertyParser
+
 
 class Utilities:
 
@@ -16,29 +18,13 @@ class Utilities:
         :param errorIfNotFound: Raises ValueError if an environment variable is not defined and no default value is given
         :return: Parameters with values substituted.
         """
-        import os
-        import re
-
-        pattern = r"(\${([^}:]+)(:([^}]+))?})"
 
         for key in parameters:
             value = parameters[key]
             if isinstance(value, dict):
                 Utilities.withEnvironment(value)
             elif isinstance(value, str):
-                matches = re.findall(pattern, value)
-
-                for match in matches:
-                    if match[1] in os.environ:
-                        value = value.replace(match[0], os.environ.get(match[1]))
-                    elif match[3]:
-                        value = value.replace(match[0], match[3])
-                    elif errorIfNotFound:
-                        raise ValueError(f"Environment {match[1]} not found and without a default value")
-                    else:
-                        value = value.replace(match[0], "")
-
-                parameters[key] = value
+                parameters[key] = PropertyParser.parse(value)
 
     @classmethod
     def md5Of(cls, directory: str, verbose: bool = False) -> Optional[str]:

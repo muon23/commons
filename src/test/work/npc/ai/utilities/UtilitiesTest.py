@@ -11,7 +11,7 @@ class UtilitiesTest(unittest.TestCase):
         argument = {
             "x": "abcd/${AAA_123:aaa_123}/de/${XXX_456}/${ZZZ:zzz}/${WWW}",
             "y": {
-                "y1": "${BBB:222}",
+                "y1": "${BBB:file:${AAA_123}}/456",
                 "y2": "abcde",
                 "y3": "${XXX_456:ccc}",
             }
@@ -26,7 +26,7 @@ class UtilitiesTest(unittest.TestCase):
 
         self.assertEqual(
             argument,
-            {'x': 'abcd/bbb/de/999/zzz/${WWW}', 'y': {'y1': '222', 'y2': 'abcde', 'y3': '999'}}
+            {'x': 'abcd/bbb/de/999/zzz/', 'y': {'y1': 'file:bbb/456', 'y2': 'abcde', 'y3': '999'}}
         )
 
     def test_md5Of(self):
