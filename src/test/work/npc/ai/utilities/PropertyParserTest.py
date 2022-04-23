@@ -23,6 +23,10 @@ class MyTestCase(unittest.TestCase):
         print(result)
         self.assertEqual(result, ":::::")
 
+        result = PropertyParser.parse("${not here}")
+        print(result)
+        self.assertEqual(result, None)
+
         with self.assertRaises(RuntimeError):
             PropertyParser.parse("}}")
 

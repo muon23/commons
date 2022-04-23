@@ -71,6 +71,19 @@ class KeyValueStoreTest(unittest.TestCase):
     def test_mongoPickle(self):
         self.__doTest(self.mongoServer, collection="test_mongoKVPickle")
 
+    def test_mongoFragment(self):
+        something = "".join("0123456789" * 5000000)
+        value = {
+            "_id": "abcde",
+            "something": something
+        }
+        mongo = KeyValueStore.of("mongodb://localhost/local", collection="testMongoFragment", storageFormat="pickle")
+        mongo.put(value["_id"], value)
+
+        readBack = mongo.get(value["_id"])
+
+        self.assertEqual(readBack, value)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -78,12 +78,12 @@ class MongoIncrementalStore(IncrementalStore):
         return self.collection
 
     def setLastState(self, state: dict):
-        state["collection"] = self.collection
-        self.mongo.index(self.STATE_COLLECTION, ["collection"], unique=True)
-        self.mongo.replace(self.STATE_COLLECTION, {"collection": self.collection}, state)
+        state["_id"] = self.collection
+        # self.mongo.index(self.STATE_COLLECTION, ["collection"], unique=True)
+        self.mongo.replace(self.STATE_COLLECTION, {"_id": self.collection}, state)
 
     def getLastRecordTime(self):
-        query = {"collection": self.collection}
+        query = {"_id": self.collection}
         state = self.mongo.get(self.STATE_COLLECTION, query)
         return state[0] if state else dict()
 

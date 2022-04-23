@@ -21,15 +21,15 @@ class Mongo:
         self.db = self.client[database]
 
     def get(self, collection: str, query: dict, **kwargs):
-        logging.info(f"Querying MongoDB {self.uri}, collection {collection} with query {query}")
+        logging.debug(f"Querying MongoDB {self.uri}, collection {collection} with query {query}")
         return self.db[collection].find(query, **kwargs)
 
-    def put(self, collection: str, data: Union[dict, List[dict], Generator[dict, None, None]], **kwargs) -> List[ObjectId]:
+    def put(self, collection: str, data: Union[dict, List[dict], Generator[dict, None, None]], **kwargs) -> Iterable[ObjectId]:
         cl = self.db[collection]
         if isinstance(data, list) or isinstance(data, Generator):
             return cl.insert_many(data, ordered=False, **kwargs)
         else:
-            return [cl.insert_one(data, **kwargs).inserted_id]
+            yield cl.insert_one(data, **kwargs).inserted_id
 
     def index(self, collection: str, fields: List[str], unique=False):
         cl = self.db[collection]
