@@ -1,6 +1,6 @@
 import logging
 import pickle
-from typing import Union, List, Generator
+from typing import Union, Generator, Iterable
 
 from work.npc.ai.utilities.IncrementalStore import IncrementalStore
 from work.npc.ai.utilities.Mongo import Mongo
@@ -36,10 +36,7 @@ class MongoIncrementalStore(IncrementalStore):
             self.forIndexing = self.forIndexing.union(set(uniqueFields))
             self.mongo.index(self.collection, uniqueFields, unique=True)
 
-    def __prepare(
-            self,
-            records: Union[dict, List[dict], Generator[dict, None, None]],
-    ) -> Generator[dict, None, None]:
+    def __prepare(self, records: Union[dict, Iterable[dict]]) -> Iterable[dict]:
         if isinstance(records, dict):
             records = [records]
 
@@ -55,7 +52,7 @@ class MongoIncrementalStore(IncrementalStore):
 
     def write(
             self,
-            records: Union[dict, List[dict], Generator[dict, None, None]],
+            records: Union[dict, Iterable[dict]],
             **kwargs
     ) -> IncrementalStore:
 
@@ -65,7 +62,8 @@ class MongoIncrementalStore(IncrementalStore):
                     query = {uf: rec[uf] for uf in self.uniqueFields }
                     self.mongo.replace(self.collection, query, rec)
             else:
-                self.mongo.put(self.collection, self.__prepare(records))
+                list(self.mongo.put(self.collection, self.__prepare(records)))  # list() to trigger put to do something
+
         except Exception as e:
             logging.debug(e)
             pass
@@ -79,7 +77,6 @@ class MongoIncrementalStore(IncrementalStore):
 
     def setLastState(self, state: dict):
         state["_id"] = self.collection
-        # self.mongo.index(self.STATE_COLLECTION, ["collection"], unique=True)
         self.mongo.replace(self.STATE_COLLECTION, {"_id": self.collection}, state)
 
     def getLastRecordTime(self):

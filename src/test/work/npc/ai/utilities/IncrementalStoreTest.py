@@ -69,7 +69,7 @@ class IncrementalStoreTest(unittest.TestCase):
                 t = startTime + timedelta(hours=24 * day + timeInterval * i)
                 for n in names:
                     data += [
-                        {"period": n, "b": 123, "date": TimeFormatter.getDate(t), "time": TimeFormatter.getTimestamp(t)},
+                        {"name": n, "b": 123, "date": TimeFormatter.getDate(t), "time": TimeFormatter.getTimestamp(t)},
                     ]
                     t = t + timedelta(hours=recordSpace)
         return data
@@ -84,7 +84,7 @@ class IncrementalStoreTest(unittest.TestCase):
         uri = f"file:{self.outputDir}"
         inc = IncrementalStore.of(
             uri, collection="test_readwriteDatedRecord",
-            storageFormat="json", dateField="date", uniqueFields=["period", "time"]
+            storageFormat="json", dateField="date", uniqueFields=["name", "time"]
         )
 
         # Test writing.  d1File is the last file written, and should have 40 entries
@@ -146,7 +146,7 @@ class IncrementalStoreTest(unittest.TestCase):
 
         inc = IncrementalStore.of(
             self.mongoServer, collection="test_mongo",
-            storageFormat="json", dateField="date", uniqueFields=["period", "time"], clean=True
+            storageFormat="json", dateField="date", uniqueFields=["name", "time"], clean=True
         )
 
         # Test writing.  d1File is the last file written, and should have 40 entries
@@ -156,7 +156,7 @@ class IncrementalStoreTest(unittest.TestCase):
         data2 = self.__makeDatedData("2022-01-04", 5, recordsPerDay, names)
         inc2 = IncrementalStore.of(
             self.mongoServer, collection="test_mongo",
-            storageFormat="pickle", dateField="date", uniqueFields=["period", "time"],
+            storageFormat="pickle", dateField="date", uniqueFields=["name", "time"],
         )
         inc2.write(data2, replace=True).flush()
 

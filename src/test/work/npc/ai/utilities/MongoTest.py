@@ -49,7 +49,7 @@ class MongoTest(unittest.TestCase):
 
         id1 = mongo.put("test", data(1))
         id2 = mongo.put("test", [data(20), data(21)])
-        print(id1, id2)
+        print(list(id1) + list(id2))
 
         removed = mongo.remove("test", {"someStr": {"$regex": "here I am 2.*"}})
         print(str(removed))

@@ -24,10 +24,10 @@ class Mongo:
         logging.debug(f"Querying MongoDB {self.uri}, collection {collection} with query {query}")
         return self.db[collection].find(query, **kwargs)
 
-    def put(self, collection: str, data: Union[dict, List[dict], Generator[dict, None, None]], **kwargs) -> Iterable[ObjectId]:
+    def put(self, collection: str, data: Union[dict, Iterable[dict]], **kwargs) -> Iterable[ObjectId]:
         cl = self.db[collection]
         if isinstance(data, list) or isinstance(data, Generator):
-            return cl.insert_many(data, ordered=False, **kwargs)
+            yield from cl.insert_many(data, ordered=False, **kwargs).inserted_ids
         else:
             yield cl.insert_one(data, **kwargs).inserted_id
 
