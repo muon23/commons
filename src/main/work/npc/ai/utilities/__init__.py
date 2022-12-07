@@ -66,7 +66,7 @@ class Utilities:
         optParser = OptionParser('usage: %prog [options]')
         optParser.add_option(
             '-c', '--conf', '--parameters',
-            dest='configFile', help='configuration file', default='vectorize.yml'
+            dest='configFile', help='configuration file', default='config.yml'
         )
 
         # Get additional CLI options
