@@ -39,7 +39,7 @@ class Languages:
         return char and cls._startQuote.match(char) is not None
 
     @classmethod
-    def separateIdeograph(cls, text):
+    def separateIdeograph(cls, text: str) -> Tuple[str, str]:
         if text is None:
             return "", ""
 

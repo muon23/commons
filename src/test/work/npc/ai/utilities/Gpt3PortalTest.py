@@ -30,6 +30,10 @@ Summarize the text above using Chinese, separating key points in paragraphs.  Do
     def test_basic(self):
         asyncio.run(self.__summarizeN(2))
 
+    def test_estimateTokens(self):
+        n = Gpt3Portal.estimateTokens(self.testText)
+        print(n)
+
 
 if __name__ == '__main__':
     unittest.main()
