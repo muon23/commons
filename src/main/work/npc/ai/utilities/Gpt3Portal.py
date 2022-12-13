@@ -61,6 +61,7 @@ class Gpt3Portal:
                 openai.error.APIConnectionError,
                 openai.error.RateLimitError,
                 openai.error.ServiceUnavailableError,
+                openai.error.Timeout,
             ) as e:
                 tries += 1
                 if tries > retries:
@@ -78,6 +79,8 @@ class Gpt3Portal:
 
     @classmethod
     def estimateTokens(cls, text: str) -> int:
+        if not text:
+            return 0
         if not cls.__tokenizer:
             cls.__tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
 
