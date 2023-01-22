@@ -1,7 +1,8 @@
 import tensorflow as tf
 
+#  Tensorflow requires Anaconda to run on Mac
 from tensorflow import keras
-from tensorflow.keras import layers
+from keras import layers
 
 
 class FnnLayer(layers.Layer):
