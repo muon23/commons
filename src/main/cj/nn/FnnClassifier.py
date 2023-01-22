@@ -5,7 +5,7 @@ import pandas as pd
 import tensorflow as tf
 from pandas import DataFrame
 from tensorflow import keras
-from tensorflow.keras import layers, callbacks
+from keras import layers, callbacks
 
 from cj.features.Feature import Feature
 from cj.nn.ClassifierFactory import ClassifierFactory
