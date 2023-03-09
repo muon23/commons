@@ -72,44 +72,6 @@ class RabbitMQTest(unittest.TestCase):
 
         self.assertEqual(True, False)
 
-    def test_fromTankaDev(self):
-        def callback(data):
-            print("got it")
-            print(f" [x] Received {data}")
-            Utilities.printObject(data)
-
-        userName = "shanda"
-        password = "shanda2019"
-        host = "44.226.151.55"
-        port = 5672
-        queue = "ai.search.queue"
-        uri = f"amqp://{userName}:{password}@{host}:{port}?queue={queue}&format=json"
-
-        receiver = StreamReceiver.of(uri, callback)
-
-        receiver.receiving()
-
-        self.assertEqual(True, False)
-
-    def test_fromTankaAws(self):
-        def callback(data):
-            print("got it")
-            print(f" [x] Received {data}")
-            Utilities.printObject(data)
-
-        userName = "tanka"
-        password = "CtgC8X5QxD8R5fvx"
-        host = "b-8ea761ec-76ab-4abf-8b52-8253a40cd908.mq.us-east-1.amazonaws.com"
-        port = 5671
-        queue = "ai.search.queue"
-        uri = f"amqps://{userName}:{password}@{host}:{port}?queue={queue}&format=json"
-
-        receiver = StreamReceiver.of(uri, callback)
-
-        receiver.receiving()
-
-        self.assertEqual(True, False)
-
 
 if __name__ == '__main__':
     unittest.main()
