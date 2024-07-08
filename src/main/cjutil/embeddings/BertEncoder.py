@@ -3,8 +3,8 @@ import numpy as np
 import transformers as tf
 from typing import Tuple, Optional
 
-from cj.embeddings.TextEncoder import TextEncoder
-from cj.utilities.Languages import Languages
+from cjutil.embeddings.TextEncoder import TextEncoder
+from cjutil.utilities.Languages import Languages
 
 
 #

@@ -2,8 +2,8 @@ import os
 import unittest
 from datetime import datetime
 
-from cj.utilities import Utilities
-from cj.utilities.TimeFormatter import TimeFormatter
+from cjutil.utilities import Utilities
+from cjutil.utilities.TimeFormatter import TimeFormatter
 
 
 class UtilitiesTest(unittest.TestCase):

@@ -2,7 +2,7 @@ import unittest
 
 import os
 
-from cj.utilities.Mongo import Mongo
+from cjutil.utilities.Mongo import Mongo
 
 
 class MongoTest(unittest.TestCase):

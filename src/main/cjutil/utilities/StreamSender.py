@@ -8,7 +8,7 @@ class StreamSender(ABC):
     @staticmethod
     def of(spec: str) -> StreamSender:
         if spec.startswith("amqp:") or spec.startswith("amqps:"):
-            from cj.utilities.RabbitMQSender import RabbitMQSender
+            from cjutil.utilities.RabbitMQSender import RabbitMQSender
             return RabbitMQSender(spec)
         else:
             raise NotImplementedError(f"Unsupported scheme from URI {spec}")

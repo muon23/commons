@@ -8,7 +8,7 @@ class StreamReceiver(ABC):
     @staticmethod
     def of(spec: str, callback=Callable[[Any], None]) -> StreamReceiver:
         if spec.startswith("amqp:") or spec.startswith("amqps:"):
-            from cj.utilities.RabbitMQReceiver import RabbitMQReceiver
+            from cjutil.utilities.RabbitMQReceiver import RabbitMQReceiver
             return RabbitMQReceiver(spec, callback)
         else:
             raise NotImplementedError(f"Unsupported scheme from URI {spec}")

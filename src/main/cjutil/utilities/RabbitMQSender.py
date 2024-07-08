@@ -5,7 +5,7 @@ from urllib.parse import urlsplit, parse_qs
 import json
 import pika
 
-from cj.utilities.StreamSender import StreamSender
+from cjutil.utilities.StreamSender import StreamSender
 
 
 class RabbitMQSender(StreamSender):

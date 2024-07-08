@@ -3,7 +3,7 @@ import pandas as pd
 from pandas import DataFrame, CategoricalDtype
 from typing import List, Tuple
 
-from cj.features.Feature import Feature
+from cjutil.features.Feature import Feature
 
 
 class CategoricalFeature(Feature):

@@ -1,7 +1,7 @@
 import unittest
 from typing import List
 
-from cj.utilities.KeyValueStore import KeyValueStore
+from cjutil.utilities.KeyValueStore import KeyValueStore
 
 
 class KeyValueStoreTest(unittest.TestCase):

@@ -3,9 +3,9 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from cj.features.CategoricalFeature import CategoricalFeature
-from cj.features.ScalarFeature import ScalarFeature
-from cj.features.VectorFeature import VectorFeature
+from cjutil.features.CategoricalFeature import CategoricalFeature
+from cjutil.features.ScalarFeature import ScalarFeature
+from cjutil.features.VectorFeature import VectorFeature
 
 
 class FeatureTest(unittest.TestCase):

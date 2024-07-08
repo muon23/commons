@@ -3,8 +3,8 @@ from typing import List
 
 from pandas import DataFrame
 
-from cj.features.Feature import Feature
-from cj.features.FeatureExtractor import FeatureExtractor
+from cjutil.features.Feature import Feature
+from cjutil.features.FeatureExtractor import FeatureExtractor
 
 
 class ClassifierModel(ABC):

@@ -4,7 +4,7 @@ import pickle
 
 import javaobj as javaobj
 
-from cj.utilities.KeyValueStore import KeyValueStore
+from cjutil.utilities.KeyValueStore import KeyValueStore
 
 
 class FileKeyValueStore(KeyValueStore):

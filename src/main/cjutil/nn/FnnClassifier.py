@@ -2,15 +2,15 @@ from typing import List, Union, Optional
 
 import dill
 import pandas as pd
-import tensorflow as tf
+import tensorflow.python as tf
 from pandas import DataFrame
-from tensorflow import keras
-from keras import layers, callbacks
 
-from cj.features.Feature import Feature
-from cj.nn.ClassifierFactory import ClassifierFactory
-from cj.nn.ClassifierModel import ClassifierModel
-from cj.nn.FnnLayer import FnnLayer
+from tensorflow.python.keras import layers, callbacks, metrics, backend
+
+from cjutil.features.Feature import Feature
+from cjutil.nn.ClassifierFactory import ClassifierFactory
+from cjutil.nn.ClassifierModel import ClassifierModel
+from cjutil.nn.FnnLayer import FnnLayer
 
 
 class FnnClassifierModel(ClassifierModel):
@@ -36,16 +36,16 @@ class FnnClassifierModel(ClassifierModel):
         if not isinstance(self.metrics, list):
             self.metrics = [self.metrics]
 
-        self.model: Optional[keras.Model] = None
+        self.model: Optional[tf.keras.Model] = None
         self.labelNames = None
 
     __metrics = {
-        "precision": tf.metrics.Precision(),
-        "recall": tf.metrics.Recall(),
-        "roc": tf.metrics.AUC(curve="ROC"),
-        "pr": tf.metrics.AUC(curve="pr"),
-        "binary_accuracy": tf.metrics.BinaryAccuracy(),
-        "categorical_accuracy": tf.metrics.CategoricalAccuracy(),
+        "precision": tf.keras.metrics.Precision(),
+        "recall": tf.keras.metrics.Recall(),
+        "roc": tf.keras.metrics.AUC(curve="ROC"),
+        "pr": tf.keras.metrics.AUC(curve="pr"),
+        "binary_accuracy": tf.keras.metrics.BinaryAccuracy(),
+        "categorical_accuracy": tf.keras.metrics.CategoricalAccuracy(),
     }
 
     def build(self, inputUnits: int, outputUnits: int):
@@ -57,7 +57,7 @@ class FnnClassifierModel(ClassifierModel):
         inputs = layers.Input(shape=(inputUnits,), name="input_features")
         fnn = FnnLayer(hiddenLayers=self.hiddenLayers, dropoutRate=self.dropoutRate, name="fnn")(inputs)
         outputs = layers.Dense(outputUnits, name="output_labels", activation=self.outputActivation)(fnn)
-        self.model = keras.Model(inputs=inputs, outputs=outputs, name="fnn_model")
+        self.model = tf.keras.Model(inputs=inputs, outputs=outputs, name="fnn_model")
 
         metrics = [self.__metrics[m] if m in self.__metrics else m for m in self.metrics]
 

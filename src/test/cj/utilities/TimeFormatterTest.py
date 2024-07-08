@@ -1,6 +1,6 @@
 import unittest
 
-from cj.utilities.TimeFormatter import TimeFormatter
+from cjutil.utilities.TimeFormatter import TimeFormatter
 
 
 class TimeFormatterTest(unittest.TestCase):

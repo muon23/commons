@@ -1,7 +1,7 @@
 import unittest
 
-from cj.embeddings.BertEncoder import BertEncoder
-from cj.utilities.Languages import Languages
+from cjutil.embeddings.BertEncoder import BertEncoder
+from cjutil.utilities.Languages import Languages
 
 
 class BertEncoderTest(unittest.TestCase):

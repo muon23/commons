@@ -8,8 +8,8 @@ from typing import List, Union, Generator
 
 import yaml
 
-from cj.utilities.IncrementalStore import IncrementalStore
-from cj.utilities.TimeFormatter import TimeFormatter
+from cjutil.utilities.IncrementalStore import IncrementalStore
+from cjutil.utilities.TimeFormatter import TimeFormatter
 
 
 class FileIncrementalStore(IncrementalStore):
@@ -110,7 +110,7 @@ class FileIncrementalStore(IncrementalStore):
             return dict()
         else:
             with open(stateFile, "r") as fd:
-                return yaml.load(fd)
+                return yaml.safe_load(fd)
 
     def read(self, startDate: str, endDate: str) -> Generator[dict, None, None]:
 

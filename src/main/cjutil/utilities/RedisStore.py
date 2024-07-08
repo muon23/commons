@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 import javaobj as javaobj
 import redis
 
-from cj.utilities.KeyValueStore import KeyValueStore
+from cjutil.utilities.KeyValueStore import KeyValueStore
 
 
 class RedisStore(KeyValueStore):
@@ -50,7 +50,7 @@ class RedisStore(KeyValueStore):
         pass
 
     def getNumEntries(self):
-        return len(self.redis.scan_iter(self.collection + "*"))
+        return len(list(self.redis.scan_iter(self.collection + "*")))
 
     def getName(self):
         return f"Redis({self.host},{self.port})"

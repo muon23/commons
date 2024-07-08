@@ -2,8 +2,8 @@ import logging
 import pickle
 from typing import Union, Generator, Iterable
 
-from cj.utilities.IncrementalStore import IncrementalStore
-from cj.utilities.Mongo import Mongo
+from cjutil.utilities.IncrementalStore import IncrementalStore
+from cjutil.utilities.Mongo import Mongo
 
 
 class MongoIncrementalStore(IncrementalStore):

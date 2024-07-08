@@ -4,8 +4,8 @@ import shutil
 import unittest
 from datetime import timedelta
 
-from cj.utilities.IncrementalStore import IncrementalStore
-from cj.utilities.TimeFormatter import TimeFormatter
+from cjutil.utilities.IncrementalStore import IncrementalStore
+from cjutil.utilities.TimeFormatter import TimeFormatter
 
 
 class IncrementalStoreTest(unittest.TestCase):

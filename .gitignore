@@ -1,4 +1,4 @@
 /commons.iml
 /.idea/
-src/main/cj/embeddings/__pycache__/
-src/main/cj/utilities/__pycache__/
+src/main/cjutil/embeddings/__pycache__/
+src/main/cjutil/utilities/__pycache__/

@@ -5,7 +5,7 @@ from typing import Dict, Any, Optional, List, Union, Tuple
 
 import yaml
 
-from cj.utilities.PropertyParser import PropertyParser
+from cjutil.utilities.PropertyParser import PropertyParser
 
 
 class Utilities:

@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 
 from typing import TypeVar, List
 
-from cj.features.CategoricalFeature import CategoricalFeature
-from cj.features.Feature import Feature
+from cjutil.features.CategoricalFeature import CategoricalFeature
+from cjutil.features.Feature import Feature
 
 
 class ClassifierFactory(ABC):

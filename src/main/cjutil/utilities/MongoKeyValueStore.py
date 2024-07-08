@@ -6,8 +6,8 @@ from typing import Dict, Iterable, List
 
 from pymongo.errors import DocumentTooLarge
 
-from cj.utilities.KeyValueStore import KeyValueStore
-from cj.utilities.Mongo import Mongo
+from cjutil.utilities.KeyValueStore import KeyValueStore
+from cjutil.utilities.Mongo import Mongo
 
 
 class MongoKeyValueStore(KeyValueStore):

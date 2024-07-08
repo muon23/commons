@@ -18,8 +18,8 @@ class IncrementalStore(ABC):
             dateField: str = None,
             uniqueFields: List[str] = None,
     ):
-        from cj.utilities.FileIncrementalStore import FileIncrementalStore
-        from cj.utilities.MongoIncrementalStore import MongoIncrementalStore
+        from cjutil.utilities.FileIncrementalStore import FileIncrementalStore
+        from cjutil.utilities.MongoIncrementalStore import MongoIncrementalStore
 
         url = urlparse(uri)
 

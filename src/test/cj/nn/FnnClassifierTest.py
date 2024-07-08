@@ -3,15 +3,15 @@ import unittest
 
 import numpy as np
 import pandas as pd
-import tensorflow as tf
-from tensorflow import keras
-from keras import layers
+import tensorflow.python as tf
+# import tensorflow.python.keras as keras
+from tensorflow.python.keras import layers, losses, metrics, callbacks, backend
 
-from cj.features.CategoricalFeature import CategoricalFeature
-from cj.features.ScalarFeature import ScalarFeature
-from cj.features.VectorFeature import VectorFeature
-from cj.nn.FnnClassifier import FnnClassifier
-from cj.nn.FnnLayer import FnnLayer
+from cjutil.features.CategoricalFeature import CategoricalFeature
+from cjutil.features.ScalarFeature import ScalarFeature
+from cjutil.features.VectorFeature import VectorFeature
+from cjutil.nn.FnnClassifier import FnnClassifier
+from cjutil.nn.FnnLayer import FnnLayer
 
 
 class FnnClassifierTest(unittest.TestCase):
@@ -31,13 +31,14 @@ class FnnClassifierTest(unittest.TestCase):
             # optimizer=keras.optimizers.Adam(cls.learningRate),
             optimizer="adam",
             # loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+
             loss=tf.keras.losses.BinaryCrossentropy(),
             # metrics=[keras.metrics.SparseCategoricalAccuracy(period="acc")],
             metrics=[
-                tf.metrics.BinaryAccuracy(),
-                tf.metrics.Precision(),
-                tf.metrics.Recall(),
-                tf.metrics.AUC(),
+                tf.keras.metrics.BinaryAccuracy(),
+                tf.keras.metrics.Precision(),
+                tf.keras.metrics.Recall(),
+                tf.keras.metrics.AUC(),
             ],
         )
         # Create an early stopping callback.
@@ -45,7 +46,7 @@ class FnnClassifierTest(unittest.TestCase):
         #     monitor="val_acc", patience=50, restore_best_weights=True
         # )
 
-        early_stopping = keras.callbacks.EarlyStopping(
+        early_stopping = tf.keras.callbacks.EarlyStopping(
             monitor="loss", mode="min", patience=50
         )
 
@@ -86,7 +87,7 @@ class FnnClassifierTest(unittest.TestCase):
         inputs = layers.Input(shape=(self.numFeatures,), name="input_features")
         fnn = FnnLayer([32, 32, 32], 0.5)(inputs)
         logits = layers.Dense(4, name="logits", activation="sigmoid")(fnn)
-        model = keras.Model(inputs=inputs, outputs=logits, name="testModel")
+        model = tf.keras.Model(inputs=inputs, outputs=logits, name="testModel")
 
         model.summary()
 

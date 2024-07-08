@@ -3,7 +3,7 @@ from typing import Tuple, Union, List, Optional
 import numpy as np
 from pandas import DataFrame
 
-from cj.features.Feature import Feature
+from cjutil.features.Feature import Feature
 
 
 class ScalarFeature(Feature):

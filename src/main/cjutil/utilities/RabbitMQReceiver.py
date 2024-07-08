@@ -6,7 +6,7 @@ from urllib.parse import urlsplit, parse_qs
 import javaobj
 import pika
 
-from cj.utilities.StreamReceiver import StreamReceiver
+from cjutil.utilities.StreamReceiver import StreamReceiver
 
 
 class RabbitMQReceiver(StreamReceiver):

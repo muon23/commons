@@ -13,9 +13,9 @@ class KeyValueStore(ABC):
             collection: str,
             **kwargs
     ) -> KeyValueStore:
-        from cj.utilities.FileKeyValueStore import FileKeyValueStore
-        from cj.utilities.RedisStore import RedisStore
-        from cj.utilities.MongoKeyValueStore import MongoKeyValueStore
+        from cjutil.utilities.FileKeyValueStore import FileKeyValueStore
+        from cjutil.utilities.RedisStore import RedisStore
+        from cjutil.utilities.MongoKeyValueStore import MongoKeyValueStore
 
         url = urlparse(uri)
 

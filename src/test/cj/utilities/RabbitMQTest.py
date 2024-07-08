@@ -3,9 +3,9 @@ import unittest
 import javaobj as javaobj
 import pika
 
-from cj.utilities import Utilities
-from cj.utilities.StreamReceiver import StreamReceiver
-from cj.utilities.StreamSender import StreamSender
+from cjutil.utilities import Utilities
+from cjutil.utilities.StreamReceiver import StreamReceiver
+from cjutil.utilities.StreamSender import StreamSender
 
 
 class RabbitMQTest(unittest.TestCase):

@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from cj.utilities.PropertyParser import PropertyParser
+from cjutil.utilities.PropertyParser import PropertyParser
 
 
 class MyTestCase(unittest.TestCase):

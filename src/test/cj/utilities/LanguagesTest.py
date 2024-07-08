@@ -1,5 +1,5 @@
 import unittest
-from cj.utilities.Languages import Languages
+from cjutil.utilities.Languages import Languages
 
 
 class LanguagesTest(unittest.TestCase):
